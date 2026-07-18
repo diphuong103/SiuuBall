@@ -1,46 +1,46 @@
 export const GameConfig = {
   field: {
-    size: 500,
-    wallThickness: 20,
+    size: 500,   // Kích thước của khung chơi (cả chiều rộng và chiều cao)
+    wallThickness: 20,   // Độ dày của các bức tường xung quanh khung chơi
   },
 
   physics: {
-    gravity: 0.0,
+    gravity: 0.0,   //   Lực hấp dẫn trong trò chơi (0.0 có nghĩa là không có trọng lực)
   },
 
   ball: {
-    radius: 16,
+    radius: 16,   // Bán kính của quả bóng
 
-    startSpeed: 4,
-    restitution: 1,
+    startSpeed: 4,   // Tốc độ ban đầu của quả bóng khi bắt đầu trò chơi
+    restitution: 1,   // Hệ số đàn hồi của quả bóng (1.0 có nghĩa là hoàn toàn đàn hồi, không mất năng lượng khi va chạm)
 
-    friction: 0,
-    frictionAir: 0,
+    friction: 0,   // Hệ số ma sát của quả bóng (0 có nghĩa là không có ma sát, quả bóng sẽ không chậm lại khi di chuyển)
+    frictionAir: 0,   // Hệ số ma sát không khí của quả bóng (0 có nghĩa là không có ma sát không khí, quả bóng sẽ không chậm lại khi di chuyển trong không khí)
   },
 
   difficulty: {
-    maxSpeed: 18,
+    maxSpeed: 18,  // Tốc độ tối đa mà quả bóng có thể đạt được trong trò chơi
 
-    speedIncreaseInterval: 15,
+    speedIncreaseInterval: 2,  // Khoảng thời gian (tính bằng giây) sau đó tốc độ sẽ tăng lên
 
-    speedIncreaseAmount: 0.5,
+    speedIncreaseAmount: 0.5,  // Số lượng tốc độ tăng lên sau mỗi khoảng thời gian (speedIncreaseInterval)
   },
 
   drawLine: {
     thickness: 8,
 
-    maxPoints: 40,
+    maxPoints: 40,  // Số lượng điểm tối đa mà người chơi có thể vẽ trên một đường thẳng
 
-    simplifyTolerance: 5,
+    simplifyTolerance: 6,  // Độ dung sai để làm mượt đường vẽ (giảm số lượng điểm mà không làm thay đổi hình dạng tổng thể của đường vẽ)
 
-    restitution: 1,
+    restitution: 1,  // Hệ số đàn hồi của đường vẽ (1.0 có nghĩa là hoàn toàn đàn hồi, không mất năng lượng khi va chạm)
 
-    lifetimeMs: 1300,
+    lifetimeMs: 1300,  // Thời gian tồn tại của đường vẽ (tính bằng mili giây) trước khi nó biến mất
   },
 
   scoring: {
-    pointsPerBounce: 10,
+    pointsPerBounce: 10,  // Số điểm được cộng khi quả bóng chạm vào đường vẽ
 
-    pointsPerSecond: 1,
+    pointsPerSecond: 1,  // Số điểm được cộng cho mỗi giây trôi qua trong trò chơi
   },
 };

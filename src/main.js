@@ -7,6 +7,7 @@ import { DrawLine } from './entities/DrawLine.js';
 import { InputManager } from './systems/InputManager.js';
 import { ScoreSystem } from './systems/ScoreSystem.js';
 import { GameConfig } from './config/GameConfig.js';
+import { DifficultySystem } from "./systems/DifficultySystem.js";
 
 const { Events } = Matter;
 
@@ -41,6 +42,9 @@ async function bootstrap() {
   const scoreSystem = new ScoreSystem();
   const scoreEl = document.getElementById('score');
 
+  // Độ khó
+  const difficultySystem = new DifficultySystem();
+
   // 6. Quản lý đường vẽ hiện tại (chỉ 1 đường tồn tại cùng lúc - FR-014)
   let currentLine = null;
 
@@ -70,6 +74,8 @@ async function bootstrap() {
     for (const pair of event.pairs) {
       const labels = [pair.bodyA.label, pair.bodyB.label];
 
+      console.log('Tốc độ hiện tại: ', difficultySystem.getCurrentSpeed());
+
       // Bóng chạm khung -> Game Over
       if (labels.includes('main-ball') && labels.includes('danger-zone') && !isGameOver) {
         handleGameOver();
@@ -85,20 +91,11 @@ async function bootstrap() {
 
         if (speed > 0) {
           const targetSpeed = GameConfig.ball.startSpeed;
-
-          Matter.Body.setVelocity(ball.body, { x: (velocity.x / speed) * targetSpeed, y: (velocity.y / speed) * targetSpeed })
+          Matter.Body.setVelocity(ball.body, {
+            x: (velocity.x / speed) * targetSpeed,
+            y: (velocity.y / speed) * targetSpeed,
+          });
         }
-
-
-        const directionX = velocity.x / speed;
-        const directionY = velocity.y / speed;
-
-        const targetSpeed = GameConfig.ball.startSpeed;
-
-        Matter.Body.setVelocity(ball.body, {
-          x: directionX * targetSpeed,
-          y: directionY * targetSpeed,
-        });
       }
     }
   });
@@ -118,6 +115,7 @@ async function bootstrap() {
     app.stage.addChild(ball.graphics);
     removeCurrentLine();
     scoreSystem.reset();
+    difficultySystem.reset();
     isGameOver = false;
   }
 
@@ -125,7 +123,12 @@ async function bootstrap() {
   app.ticker.add((ticker) => {
     if (isGameOver) return;
 
+    const deltaSeconds = ticker.deltaMS / 1000;
+
+    difficultySystem.update(deltaSeconds);
+
     physics.update(ticker.deltaMS);
+
     ball.syncGraphics();
 
     // Kiểm tra đường vẽ hết hạn (FR-015)
@@ -133,7 +136,7 @@ async function bootstrap() {
       removeCurrentLine();
     }
 
-    scoreSystem.addTimeElapsed(ticker.deltaMS / 1000);
+    scoreSystem.addTimeElapsed(deltaSeconds);
     scoreEl.textContent = Math.floor(scoreSystem.score);
   });
 
