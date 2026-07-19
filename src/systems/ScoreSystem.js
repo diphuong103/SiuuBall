@@ -18,6 +18,10 @@ export class ScoreSystem {
     this.score += GameConfig.scoring.pointsPerBounce;
   }
 
+  addPoints(points) {
+    this.score += points;
+  }
+
   addTimeElapsed(deltaSeconds) {
     this.score += GameConfig.scoring.pointsPerSecond * deltaSeconds;
   }

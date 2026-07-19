@@ -32,6 +32,14 @@ export class CollisionManager {
 
                 }
 
+                if (labels.includes("main-ball") && labels.includes("mystery-orb")) {
+                    handlers.onBallHitOrb?.(pair);
+                }
+
+                if (labels.includes("main-ball") && labels.includes("projectile")) {
+                    handlers.onBallHitProjectile?.(pair);
+                }
+
                 if (
                     labels.includes("main-ball") &&
                     labels.includes("danger-zone")

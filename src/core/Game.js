@@ -10,15 +10,22 @@ import { GameState } from "./GameState.js";
 import { GameplayHUD } from "../ui/GameplayHUD.js";
 import { MainMenu } from "../ui/MainMenu.js";
 import { GameOverPopup } from "../ui/GameOverPopup.js";
-import { SettingPopup } from "../ui/SettingPopup.js";
+import { SettingsPopup } from "../ui/SettingsPopup.js";
 import { CollisionManager } from "../gameplay/CollisionManager.js";
 import { BounceController } from "../gameplay/BounceController.js";
 import { GameConfig } from "../config/GameConfig.js";
+import { Container } from "pixi.js";
+import { SpawnManager } from "../systems/SpawnManager.js";
+import { OrbEffectSystem } from "../gameplay/OrbEffectSystem.js";
+import { OrbController } from "../gameplay/OrbController.js";
+import { ProjectileController } from "../gameplay/ProjectileController.js";
+import { EffectToast } from "../ui/EffectToast.js";
 
 export class Game {
   constructor() {
     this.gameState = GameState.MENU;
     this.currentLine = null;
+    this.isShielded = false;
 
     // Lựa chọn của người chơi từ MainMenu
     this.selectedBall = null;
@@ -39,6 +46,11 @@ export class Game {
     });
     gameContainer.insertBefore(this.app.canvas, gameContainer.firstChild);
 
+    // 1.5. Layer riêng cho gameplay (danger zone, ball, line)
+    // Luôn nằm DƯỚI mọi UI vì chỉ add vào stage đúng 1 lần, ngay từ đầu.
+    this.gameplayLayer = new Container();
+    this.app.stage.addChild(this.gameplayLayer);
+
     // 2. Init Physics
     this.physics = new PhysicsWorld();
 
@@ -52,17 +64,29 @@ export class Game {
       this.app.screen.height,
     );
     wallBodies.forEach((body) => this.physics.add(body));
-    this.app.stage.addChild(wallGraphics);
+    this.gameplayLayer.addChild(wallGraphics);
 
     this.ball = new Ball(this.app.screen.width / 2, this.app.screen.height / 2);
     this.physics.add(this.ball.body);
-    this.app.stage.addChild(this.ball.graphics);
+    this.gameplayLayer.addChild(this.ball.graphics);
 
     // 5. Gameplay Controllers
     this.collisionManager = new CollisionManager(this.physics.engine);
     this.bounceController = new BounceController(
       this.ball,
       this.difficultySystem,
+    );
+    this.spawnManager = new SpawnManager(
+      this.physics,
+      this.gameplayLayer,
+      this.app.screen.width,
+      this.app.screen.height,
+    );
+    this.effectSystem = new OrbEffectSystem(this);
+    this.orbController = new OrbController(this.spawnManager, this.effectSystem);
+    this.projectileController = new ProjectileController(
+      this.spawnManager,
+      () => this.ball,
     );
 
     this.collisionManager.register({
@@ -75,6 +99,18 @@ export class Game {
         if (this.gameState !== GameState.PLAYING) return;
         this.gameOver();
       },
+      onBallHitOrb: (pair) => {
+        if (this.gameState !== GameState.PLAYING) return;
+        const orb = this.findSpawnedEntity(pair, 'mystery-orb', this.orbController.orbs);
+        this.orbController.handleCollision(this.ball, orb);
+      },
+      onBallHitProjectile: (pair) => {
+        if (this.gameState !== GameState.PLAYING) return;
+        const projectile = this.findSpawnedEntity(pair, 'projectile', this.projectileController.projectiles);
+        if (!projectile) return;
+        this.projectileController.handleCollision(projectile);
+        if (!this.isShielded) this.gameOver();
+      },
     });
 
     this.inputManager = new InputManager(this.app.canvas, (rawPoints) => {
@@ -82,10 +118,11 @@ export class Game {
       this.createNewLine(rawPoints);
     });
 
-    // 6. Init UI
+    // 6. Init UI (add SAU gameplayLayer nên luôn nằm trên)
     this.hud = new GameplayHUD(this.app.screen.width);
+    this.effectToast = new EffectToast(this.app.screen.width);
     this.mainMenu = new MainMenu(this.app.screen.width, this.app.screen.height);
-    this.SettingPopup = new SettingPopup(
+    this.SettingsPopup = new SettingsPopup(
       this.app.screen.width,
       this.app.screen.height,
     );
@@ -95,14 +132,15 @@ export class Game {
     );
 
     this.app.stage.addChild(this.hud.container);
+    this.app.stage.addChild(this.effectToast.container);
     this.app.stage.addChild(this.mainMenu.container);
-    this.app.stage.addChild(this.SettingPopup.container);
+    this.app.stage.addChild(this.SettingsPopup.container);
     this.app.stage.addChild(this.gameOverPopup.container);
 
     // --- MainMenu events ---
     this.mainMenu.onStart(() => this.startGame());
     this.mainMenu.onSoundSetting(() => this.showSoundSettings());
-    this.mainMenu.onSettings(() => this.showSoundSettings()); // Nếu người dùng bấm vào nút SETTINGS to ở dưới Play
+    this.mainMenu.onSettings(() => this.showSoundSettings());
 
     // Chọn bóng qua slideshow trái/phải
     this.mainMenu.onBallChange((ballOption) => {
@@ -120,10 +158,9 @@ export class Game {
     this.selectedLineColor = this.mainMenu.getSelectedColor();
     this.applyBallAppearance();
 
-    this.SettingPopup.onClose(() => this.hideSoundSettings());
-  
-    this.SettingPopup.onDifficultySelect((level) => {
-      // Setup difficulty intervals based on level
+    this.SettingsPopup.onClose(() => this.hideSoundSettings());
+
+    this.SettingsPopup.onDifficultySelect((level) => {
       if (level === 'EASY') {
         GameConfig.difficulty.speedIncreaseAmount = 0.2;
         GameConfig.difficulty.maxSpeed = 12;
@@ -136,7 +173,8 @@ export class Game {
       }
       this.difficultySystem.reset();
     });
-    this.SettingPopup.onResetScore(() => {
+
+    this.SettingsPopup.onResetScore(() => {
       localStorage.setItem('bd_best_score', '0');
       this.scoreSystem.bestScore = 0;
       this.hud.update({
@@ -144,7 +182,7 @@ export class Game {
         bestScore: 0,
         elapsedTime: this.difficultySystem.getElapsedTime(),
       });
-      alert('High score reset!');
+      // SettingsPopup tự hiện toast, không cần alert() nữa
     });
 
     this.gameOverPopup.onRestart(() => this.restartGame());
@@ -158,10 +196,6 @@ export class Game {
     this.gameOverPopup.hide();
   }
 
-  /**
-   * Áp màu/texture của bóng đã chọn vào this.ball hiện tại.
-   * Chỉnh sửa phần bên trong tuỳ theo API thật của class Ball.
-   */
   applyBallAppearance() {
     if (!this.ball || !this.selectedBall) return;
 
@@ -170,20 +204,31 @@ export class Game {
     } else if (this.ball.setColor) {
       this.ball.setColor(this.selectedBall.color);
     }
-    // Nếu Ball chưa có setTexture/setColor, báo mình gửi Ball.js để nối chính xác.
   }
 
   createNewLine(rawPoints) {
     this.removeCurrentLine();
     this.currentLine = new DrawLine(rawPoints, this.selectedLineColor);
     this.currentLine.bodies.forEach((body) => this.physics.add(body));
-    this.app.stage.addChild(this.currentLine.graphics);
+    this.gameplayLayer.addChild(this.currentLine.graphics);
+  }
+
+  findSpawnedEntity(pair, label, entities) {
+    const body = pair.bodyA.label === label ? pair.bodyA : pair.bodyB;
+    return entities.find((entity) => entity.body === body);
+  }
+
+  setShield(enabled) {
+    this.isShielded = enabled;
+    if (!this.ball?.glowSprite) return;
+    this.ball.glowSprite.tint = enabled ? 0x4ade80 : 0xffffff;
+    this.ball.glowSprite.alpha = enabled ? 0.48 : 1;
   }
 
   removeCurrentLine() {
     if (!this.currentLine) return;
     this.currentLine.bodies.forEach((body) => this.physics.remove(body));
-    this.app.stage.removeChild(this.currentLine.graphics);
+    this.gameplayLayer.removeChild(this.currentLine.graphics);
     this.currentLine = null;
   }
 
@@ -206,44 +251,50 @@ export class Game {
   resetGameplay() {
     // Xoá bóng cũ
     this.physics.remove(this.ball.body);
-    this.app.stage.removeChild(this.ball.graphics);
-
-    // Tạo bóng mới
-    this.ball = new Ball(this.app.screen.width / 2, this.app.screen.height / 2);
-    this.physics.add(this.ball.body);
-    this.app.stage.addChild(this.ball.graphics);
-
-    this.bounceController.ball = this.ball;
-
-    // Áp lại appearance đã chọn cho bóng mới
-    this.applyBallAppearance();
+    this.gameplayLayer.removeChild(this.ball.graphics);
 
     // Xoá line đang vẽ
     this.removeCurrentLine();
+    this.spawnManager?.clear?.();
+    this.effectSystem?.clear();
+    this.setShield(false);
+    this.orbController.timer = 0;
+    this.projectileController.timer = 0;
 
     // Reset điểm và độ khó
     this.scoreSystem.reset();
     this.difficultySystem.reset();
   }
 
+  createNewBall() {
+    this.ball = new Ball(this.app.screen.width / 2, this.app.screen.height / 2);
+    this.physics.add(this.ball.body);
+    this.gameplayLayer.addChild(this.ball.graphics); // luôn nằm dưới UI
+
+    this.bounceController.ball = this.ball;
+    this.applyBallAppearance();
+  }
+
   restartGame() {
     this.resetGameplay();
+    this.createNewBall();
     this.startGame();
   }
 
   goToMenu() {
     this.gameState = GameState.MENU;
     this.gameOverPopup.hide();
-    this.mainMenu.show();
     this.resetGameplay();
+    this.createNewBall();
+    this.mainMenu.show();
   }
 
   showSoundSettings() {
-    this.SettingPopup.show();
+    this.SettingsPopup.show();
   }
 
   hideSoundSettings() {
-    this.SettingPopup.hide();
+    this.SettingsPopup.hide();
   }
 
   update() {
@@ -253,6 +304,10 @@ export class Game {
     this.difficultySystem.update(deltaSeconds);
     this.physics.update(this.app.ticker.deltaMS);
     this.ball.syncGraphics();
+    this.orbController.update(deltaSeconds);
+    this.projectileController.update(deltaSeconds);
+    this.effectSystem.update();
+    this.effectToast.update(deltaSeconds);
 
     if (this.currentLine && this.currentLine.isExpired(performance.now())) {
       this.removeCurrentLine();
@@ -268,6 +323,8 @@ export class Game {
 
   destroy() {
     this.collisionManager.unregister();
+    this.effectSystem.clear();
+    this.spawnManager.clear();
     this.app.destroy(true, { children: true });
   }
 }

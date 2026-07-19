@@ -4,10 +4,10 @@ import { UIButton } from './components/UIButton.js';
 import { ToggleButton } from './components/ToggleButton.js';
 
 /**
- * SettingPopup — Popup cài đặt với overlay nền mờ.
+ * SettingsPopup — Popup cài đặt với overlay nền mờ.
  * Chứa toggle Sound/Music, chọn độ khó, reset điểm cao, và nút Close.
  */
-export class SettingPopup extends BaseUI {
+export class SettingsPopup extends BaseUI {
     /**
      * @param {number} screenWidth
      * @param {number} screenHeight

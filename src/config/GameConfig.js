@@ -49,6 +49,29 @@ export const GameConfig = {
     pointsPerSecond: 1,  // Số điểm được cộng cho mỗi giây trôi qua trong trò chơi
   },
 
+  orb: {
+    radius: 22,
+    spawnInterval: 12,
+    lifetimeMs: 9000,
+    edgePadding: 70,
+    color: 0xa855f7,
+    glowColor: 0xe9d5ff,
+    effects: {
+      scoreBonus: 50,
+      slowBallMultiplier: 0.65,
+      shieldDurationMs: 6000,
+    },
+  },
+
+  projectile: {
+    radius: 12,
+    spawnInterval: 8,
+    speed: 5,
+    lifetimeMs: 7000,
+    edgePadding: 32,
+    color: 0xff4d6d,
+  },
+
   debug: {
     enabled: true,        // Bật/tắt toàn bộ debug
     logCollision: true,   // Log va chạm trong collisionEnd

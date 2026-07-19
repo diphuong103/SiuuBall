@@ -82,7 +82,7 @@ export class MainMenu {
     // =========================================================
     // BALL SELECTOR
     // =========================================================
-    _createBallSelector(screenWidth, screenHeight) {
+    _createBallSelector(screenWidth, screenHeight) {  // Tạo slideshow chọn bóng
         const centerX = screenWidth / 2;
         const centerY = screenHeight * 0.35;
 
@@ -151,7 +151,7 @@ export class MainMenu {
         this._renderBall();
     }
 
-    _createArrowButton(x, y, direction) {
+    _createArrowButton(x, y, direction) {  // direction: "left" hoặc "right"
         const btn = new Container();
         btn.position.set(x, y);
         btn.eventMode = "static";
@@ -184,7 +184,7 @@ export class MainMenu {
         return btn;
     }
 
-    _changeBall(delta) {
+    _changeBall(delta) {   // Cập nhật ballIndex
         const len = this.ballOptions.length;
         this.ballIndex = (this.ballIndex + delta + len) % len;
         this._renderBall();

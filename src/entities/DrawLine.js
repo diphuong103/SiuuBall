@@ -10,7 +10,7 @@ const { Bodies, Body } = Matter;
  * vật lý tĩnh (static body chain) để bóng có thể va chạm và nảy vào.
  */
 export class DrawLine {
-  constructor(rawPoints) {
+  constructor(rawPoints, color = 0x4fd1ff) {
     const { simplifyTolerance, maxPoints, thickness, restitution, lifetimeMs } =
       GameConfig.drawLine;
 
@@ -36,7 +36,7 @@ export class DrawLine {
     for (let i = 1; i < points.length; i++) {        // Tạo nhiều hình chữ nhật liên tiếp nối với nhau thành 1 đường thẳng
       this.graphics.lineTo(points[i].x, points[i].y);
     }
-    this.graphics.stroke({ width: thickness, color: 0x4fd1ff, cap: 'round', join: 'round' });
+    this.graphics.stroke({ width: thickness, color, cap: 'round', join: 'round' });
 
     // 4. Đường vẽ tự huỷ sau lifetimeMs
     this.expiresAt = performance.now() + lifetimeMs;
