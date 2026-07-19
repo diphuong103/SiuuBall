@@ -3,6 +3,12 @@ export const GameConfig = {
     wallThickness: 20,   // Độ dày của các bức tường xung quanh khung chơi
   },
 
+  viewport: {
+    width: 720 ,
+    height: 1280 ,
+    aspectRatio: 9 / 16,
+  },
+
   physics: {
     gravity: 0.0,   //   Lực hấp dẫn trong trò chơi (0.0 có nghĩa là không có trọng lực)
   },
