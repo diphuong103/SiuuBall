@@ -1,6 +1,5 @@
 export const GameConfig = {
   field: {
-    size: 500,   // Kích thước của khung chơi (cả chiều rộng và chiều cao)
     wallThickness: 20,   // Độ dày của các bức tường xung quanh khung chơi
   },
 
@@ -43,4 +42,11 @@ export const GameConfig = {
 
     pointsPerSecond: 1,  // Số điểm được cộng cho mỗi giây trôi qua trong trò chơi
   },
+
+  debug: {
+    enabled: true,        // Bật/tắt toàn bộ debug
+    logCollision: true,   // Log va chạm trong collisionEnd
+    logDifficulty: true,  // Log tốc độ/level trong DifficultySystem
+  }
+
 };

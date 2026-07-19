@@ -4,9 +4,12 @@ import { GameConfig } from '../config/GameConfig.js';
 
 const { Bodies } = Matter;
 
-export function createDangerZone(centerX, centerY) {
-  const { size, wallThickness } = GameConfig.field;
-  const half = size / 2;
+export function createDangerZone(fieldW, fieldH) {
+  const { wallThickness } = GameConfig.field;
+  const halfW = fieldW / 2;
+  const halfH = fieldH / 2;
+  const cx = fieldW / 2;
+  const cy = fieldH / 2;
 
   const options = {
     isStatic: true,     // các khung tĩnh, không chịu ảnh hưởng của lực hút
@@ -15,16 +18,15 @@ export function createDangerZone(centerX, centerY) {
   };
 
   const bodies = [
-    Bodies.rectangle(centerX, centerY - half, size, wallThickness, options), // top
-    Bodies.rectangle(centerX, centerY + half, size, wallThickness, options), // bottom
-    Bodies.rectangle(centerX - half, centerY, wallThickness, size, options), // left
-    Bodies.rectangle(centerX + half, centerY, wallThickness, size, options), // right
+    Bodies.rectangle(cx, cy - halfH, fieldW, wallThickness, options), // top
+    Bodies.rectangle(cx, cy + halfH, fieldW, wallThickness, options), // bottom
+    Bodies.rectangle(cx - halfW, cy, wallThickness, fieldH, options), // left
+    Bodies.rectangle(cx + halfW, cy, wallThickness, fieldH, options), // right
   ];
 
-
-  const graphics = new Graphics();  // vẽ khung viền màu đỏ lên các khung tĩnh của DangerZone
+  const graphics = new Graphics();
   graphics
-    .rect(centerX - half, centerY - half, size, size)
+    .rect(0, 0, fieldW, fieldH)
     .stroke({ width: wallThickness, color: 0xff3b3b });
 
   return { bodies, graphics };

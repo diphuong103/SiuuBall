@@ -6,7 +6,7 @@ const { Engine, World } = Matter;
 export class PhysicsWorld {
   constructor() {
     this.engine = Engine.create();  // Tạo một engine vật lý mới (trống)
-    this.engine.gravity.y = 0;  // Không dùng trọng lực
+    this.engine.gravity.y = GameConfig.physics.gravity;  // Lấy từ config (0 = không trọng lực)
     this.world = this.engine.world;
   }
 

@@ -1,4 +1,4 @@
-import { GameConfig } from "../config/GameConfig.js";
+import { GameConfig } from '../config/GameConfig.js';
 
 export class DifficultySystem {
   constructor() {
@@ -8,33 +8,27 @@ export class DifficultySystem {
   reset() {
     this.elapsedTime = 0;
     this.currentSpeed = GameConfig.ball.startSpeed;
+    this.lastLevel = 0;
   }
 
   update(deltaSeconds) {
     this.elapsedTime += deltaSeconds;
 
-    const startSpeed = GameConfig.ball.startSpeed;
+    const { speedIncreaseInterval, speedIncreaseAmount, maxSpeed } = GameConfig.difficulty;
 
-    const { speedIncreaseInterval, speedIncreaseAmount, maxSpeed } =
-      GameConfig.difficulty;
+    const level = Math.floor(this.elapsedTime / speedIncreaseInterval);
 
-    console.log({
-      elapsed: this.elapsedTime,  // Thời gian đã trôi qua kể từ khi bắt đầu trò chơi (tính bằng giây)
-      interval: speedIncreaseInterval,  // Khoảng thời gian (tính bằng giây) sau đó tốc độ sẽ tăng lên
-      amount: speedIncreaseAmount,    // Số lượng tốc độ tăng lên sau mỗi khoảng thời gian
-      max: maxSpeed,
-    });
-
-    const level = Math.floor(
-      this.elapsedTime / speedIncreaseInterval, // Tính toán cấp độ dựa trên thời gian đã trôi qua và khoảng thời gian tăng tốc
-    );
-
-    console.log("level", level + 1);
+    // Chỉ log khi level thực sự thay đổi (không spam mỗi frame)
+    if (GameConfig.debug.logDifficulty && level !== this.lastLevel) {
+      this.lastLevel = level;
+      console.log(`[Difficulty] Level ${level + 1} — speed: ${Math.min(GameConfig.ball.startSpeed + level * speedIncreaseAmount, maxSpeed).toFixed(1)
+        }`);
+    }
 
     this.currentSpeed = Math.min(
       GameConfig.ball.startSpeed + level * speedIncreaseAmount,
-      maxSpeed,
-    ); // Giới hạn tốc độ hiện tại không vượt quá maxSpeed
+      maxSpeed
+    );
   }
 
   getCurrentSpeed() {
