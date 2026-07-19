@@ -1,4 +1,4 @@
-export class HUDSystem {
+export class GameplayHUD {
     constructor() {
         this.scoreEl = document.getElementById("score");  // Lấy element score từ index.html
         this.bestEl = document.getElementById("best-score"); // Lấy element best-score từ index.html

@@ -34,4 +34,9 @@ export class DifficultySystem {
   getCurrentSpeed() {
     return this.currentSpeed;
   }
+
+  getElapsedTime() {
+    return this.elapsedTime;
+  }
 }
+
