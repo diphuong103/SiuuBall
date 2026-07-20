@@ -4,9 +4,11 @@ export class SpawnManager {
     this.layer = layer;
     this.width = width;
     this.height = height;
+    this.entities = new Set();
   }
 
   add(entity) {
+    this.entities.add(entity);
     if (entity.body) {
       this.physics.add(entity.body);
     }
@@ -18,15 +20,24 @@ export class SpawnManager {
   }
 
   remove(entity) {
-    if (!entity?.isActive) return;
+    if (!entity) return;
+
+    this.entities.delete(entity);
+
+    if (!entity.isActive) return;
 
     if (entity.body) {
       this.physics.remove(entity.body);
     }
 
-    if (typeof entity.destroy === 'function') {
+    if (typeof entity.destroy === "function") {
       entity.destroy();
     }
   }
 
+  clear() {
+    for (const entity of [...this.entities]) {
+      this.remove(entity);
+    }
+  }
 }

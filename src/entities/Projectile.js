@@ -11,6 +11,7 @@ export class Projectile {
     this.body = Bodies.circle(x, y, radius, {
       isSensor: true,
       label: 'projectile',
+      frictionAir: 0,
     });
     Body.setVelocity(this.body, velocity);
     this.expiresAt = performance.now() + lifetimeMs;

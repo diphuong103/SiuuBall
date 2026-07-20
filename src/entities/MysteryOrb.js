@@ -6,9 +6,10 @@ const { Bodies } = Matter;
 
 export class MysteryOrb {
 
-    constructor(x, y) {
+    constructor(x, y, effect = null) {
         const { radius, lifetimeMs, color, glowColor } = GameConfig.orb;
         this.radius = radius;
+        this.effect = effect;
         this.body = Bodies.circle(x, y, radius, {
             isStatic: true,
             isSensor: true,
@@ -18,9 +19,10 @@ export class MysteryOrb {
         this.expiresAt = this.createdAt + lifetimeMs;
         this.container = new Container();
         this.container.position.set(x, y);
-        this.glow = new Graphics().circle(0, 0, radius + 12).fill({ color: glowColor, alpha: 0.18 });
+        const orbColor = this.effect?.color ?? color;
+        this.glow = new Graphics().circle(0, 0, radius + 12).fill({ color: orbColor, alpha: 0.18 });
         this.sprite = new Graphics()
-            .circle(0, 0, radius).fill(color)
+            .circle(0, 0, radius).fill(orbColor)
             .circle(-radius * 0.28, -radius * 0.28, radius * 0.24).fill({ color: 0xffffff, alpha: 0.7 })
             .stroke({ width: 2, color: 0xffffff, alpha: 0.8 });
         this.container.addChild(this.glow, this.sprite);

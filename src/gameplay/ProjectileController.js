@@ -1,5 +1,5 @@
-import { GameConfig } from '../config/GameConfig.js';
-import { Projectile } from '../entities/Projectile.js';
+import { GameConfig } from "../config/GameConfig.js";
+import { Projectile } from "../entities/Projectile.js";
 
 export class ProjectileController {
   constructor(spawnManager, getTarget) {
@@ -8,32 +8,79 @@ export class ProjectileController {
     this.spawnCooldown = GameConfig.projectile.spawnInterval;
     this.timer = 0;
     this.projectiles = [];
+    this.elapsedTime = 0;
   }
 
+  // Sinh ra một viên đạn từ một cạnh ngẫu nhiên
   spawnProjectile(targetPosition) {
+    if (this.projectiles.length >= GameConfig.projectile.maxActive) {
+      return;
+    }
     const padding = GameConfig.projectile.edgePadding;
     const width = this.spawnManager.width;
     const height = this.spawnManager.height;
     const side = Math.floor(Math.random() * 4);
-    const position = side === 0 ? { x: Math.random() * width, y: padding }
-      : side === 1 ? { x: width - padding, y: Math.random() * height }
-        : side === 2 ? { x: Math.random() * width, y: height - padding }
-          : { x: padding, y: Math.random() * height };
+
+    let position;
+
+    switch (side) {
+      case 0: // Cạnh trên (top)
+        position = {
+          x: Math.random() * width,
+          y: padding,
+        };
+        break;
+
+      case 1: // Cạnh phải (right)
+        position = {
+          x: width - padding,
+          y: Math.random() * height,
+        };
+        break;
+
+      case 2: // Cạnh dưới (bottom)
+        position = {
+          x: Math.random() * width,
+          y: height - padding,
+        };
+        break;
+
+      default: // side === 3, Cạnh trái (left)
+        position = {
+          x: padding,
+          y: Math.random() * height,
+        };
+        break;
+    }
 
     const dx = targetPosition.x - position.x;
     const dy = targetPosition.y - position.y;
-    const length = Math.hypot(dx, dy) || 1;
-    const speed = GameConfig.projectile.speed;
-    const projectile = new Projectile(position.x, position.y, { x: dx / length * speed, y: dy / length * speed });
+    const length = Math.hypot(dx, dy) || 1; //hypot là hàm pythagoras tính căn bậc hai của tổng bình phương các cạnh, dùng để tính khoảng cách giữa hai điểm trong không gian 2D
+    const projectileConfig = GameConfig.projectile;
+
+    const speed = Math.min(
+      projectileConfig.maxSpeed,
+      Math.max(
+        projectileConfig.minSpeed,
+        projectileConfig.speed +
+          this.elapsedTime * projectileConfig.speedIncreasePerSecond,
+      ),
+    );
+    const projectile = new Projectile(position.x, position.y, {
+      x: (dx / length) * speed,
+      y: (dy / length) * speed,
+    });
 
     this.spawnManager.add(projectile);
     this.projectiles.push(projectile);
   }
 
   update(deltaTime) {
+    // Cập nhật trạng thái của các viên đạn, sinh ra viên đạn mới nếu cần
+    this.elapsedTime += deltaTime;
     this.timer += deltaTime;
     if (this.timer >= this.spawnCooldown) {
-      this.timer = 0;
+      this.timer -= this.spawnCooldown; // Giữ phần thời gian dư ra để tránh mất đồng bộ
       const target = this.getTarget();
       if (target && target.body) {
         this.spawnProjectile(target.body.position);
@@ -41,15 +88,22 @@ export class ProjectileController {
     }
     const now = performance.now();
     for (const projectile of [...this.projectiles]) {
-      if (now >= projectile.expiresAt || this.isOutside(projectile)) this.remove(projectile);
+      if (now >= projectile.expiresAt || this.isOutside(projectile))
+        this.remove(projectile);
       else projectile.syncGraphics();
     }
   }
 
   isOutside(projectile) {
+    // Kiểm tra xem viên đạn có nằm ngoài
     const { x, y } = projectile.body.position;
     const margin = projectile.radius * 3;
-    return x < -margin || x > this.spawnManager.width + margin || y < -margin || y > this.spawnManager.height + margin;
+    return (
+      x < -margin ||
+      x > this.spawnManager.width + margin ||
+      y < -margin ||
+      y > this.spawnManager.height + margin
+    );
   }
 
   handleCollision(projectile) {
@@ -58,6 +112,7 @@ export class ProjectileController {
 
   remove(projectile) {
     this.spawnManager.remove(projectile);
+    this.spawnManager.entities.delete(projectile);
     const index = this.projectiles.indexOf(projectile);
     if (index >= 0) this.projectiles.splice(index, 1);
   }

@@ -83,7 +83,10 @@ export class Game {
       this.app.screen.height,
     );
     this.effectSystem = new OrbEffectSystem(this);
-    this.orbController = new OrbController(this.spawnManager, this.effectSystem);
+    this.orbController = new OrbController(
+      this.spawnManager,
+      this.effectSystem,
+    );
     this.projectileController = new ProjectileController(
       this.spawnManager,
       () => this.ball,
@@ -95,21 +98,36 @@ export class Game {
         this.scoreSystem.addBouncePoints();
         this.bounceController.maintainSpeed();
       },
-      onBallHitDangerZone: (pair) => {
+      onBallHitDangerZone: () => {
         if (this.gameState !== GameState.PLAYING) return;
         this.gameOver();
       },
       onBallHitOrb: (pair) => {
         if (this.gameState !== GameState.PLAYING) return;
-        const orb = this.findSpawnedEntity(pair, 'mystery-orb', this.orbController.orbs);
+        const orb = this.findSpawnedEntity(
+          pair,
+          "mystery-orb",
+          this.orbController.orbs,
+        );
         this.orbController.handleCollision(this.ball, orb);
       },
       onBallHitProjectile: (pair) => {
         if (this.gameState !== GameState.PLAYING) return;
-        const projectile = this.findSpawnedEntity(pair, 'projectile', this.projectileController.projectiles);
+
+        const projectile = this.findSpawnedEntity(
+          pair,
+          "projectile",
+          this.projectileController.projectiles,
+        );
         if (!projectile) return;
+
         this.projectileController.handleCollision(projectile);
-        if (!this.isShielded) this.gameOver();
+
+        if (this.consumeShieldIfActive()) {
+          return;
+        }
+
+        this.gameOver();
       },
     });
 
@@ -161,13 +179,13 @@ export class Game {
     this.SettingsPopup.onClose(() => this.hideSoundSettings());
 
     this.SettingsPopup.onDifficultySelect((level) => {
-      if (level === 'EASY') {
+      if (level === "EASY") {
         GameConfig.difficulty.speedIncreaseAmount = 0.2;
         GameConfig.difficulty.maxSpeed = 12;
-      } else if (level === 'NORMAL') {
+      } else if (level === "NORMAL") {
         GameConfig.difficulty.speedIncreaseAmount = 0.5;
         GameConfig.difficulty.maxSpeed = 18;
-      } else if (level === 'HARD') {
+      } else if (level === "HARD") {
         GameConfig.difficulty.speedIncreaseAmount = 1.0;
         GameConfig.difficulty.maxSpeed = 25;
       }
@@ -175,7 +193,7 @@ export class Game {
     });
 
     this.SettingsPopup.onResetScore(() => {
-      localStorage.setItem('bd_best_score', '0');
+      localStorage.setItem("bd_best_score", "0");
       this.scoreSystem.bestScore = 0;
       this.hud.update({
         score: this.scoreSystem.getScore(),
@@ -225,6 +243,12 @@ export class Game {
     this.ball.glowSprite.alpha = enabled ? 0.48 : 1;
   }
 
+  setGravityScale(value) {
+    if (!this.physics?.engine) return;
+    this.physics.engine.world.gravity.y = value;
+    this.physics.engine.world.gravity.x = 0;
+  }
+
   removeCurrentLine() {
     if (!this.currentLine) return;
     this.currentLine.bodies.forEach((body) => this.physics.remove(body));
@@ -258,8 +282,11 @@ export class Game {
     this.spawnManager?.clear?.();
     this.effectSystem?.clear();
     this.setShield(false);
+    this.setGravityScale(GameConfig.physics.gravity);
+    this.projectileController?.clear();
+    this.orbController?.clear();
     this.orbController.timer = 0;
-    this.projectileController.timer = 0;
+    this.projectileController.timer = 0; // Reset cooldown timer for projectile spawning
 
     // Reset điểm và độ khó
     this.scoreSystem.reset();
@@ -297,7 +324,14 @@ export class Game {
     this.SettingsPopup.hide();
   }
 
-  update() {
+  consumeShieldIfActive() {
+    if (!this.isShielded) return false;
+    this.setShield(false);
+    return true;
+  }
+
+  // Cập nhật trạng
+  update() { 
     if (this.gameState !== GameState.PLAYING) return;
     const deltaSeconds = this.app.ticker.deltaMS / 1000;
 

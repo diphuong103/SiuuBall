@@ -49,26 +49,39 @@ export const GameConfig = {
     pointsPerSecond: 1,  // Số điểm được cộng cho mỗi giây trôi qua trong trò chơi
   },
 
-  orb: {
-    radius: 22,
-    spawnInterval: 12,
-    lifetimeMs: 9000,
-    edgePadding: 70,
-    color: 0xa855f7,
-    glowColor: 0xe9d5ff,
-    effects: {
-      scoreBonus: 50,
-      slowBallMultiplier: 0.65,
-      shieldDurationMs: 6000,
-    },
+  // GameConfig.js — bổ sung vào orb.effects
+orb: {
+  radius: 22,
+  spawnInterval: 12,
+  lifetimeMs: 9000,
+  edgePadding: 70,
+  color: 0xa855f7,
+  glowColor: 0xe9d5ff,
+  effects: {
+    scoreBonus: 50,
+    slowBallMultiplier: 0.65,
+    shieldDurationMs: 6000,
+
+   
+    doubleScoreDurationMs: 8000,   // DOUBLE_SCORE: Thời gian nhân đôi điểm (ms)
+    speedUpMultiplier: 1.4,        // SPEED_UP: tăng tốc bóng
+    speedUpDurationMs: 5000,       // Thời gian tăng tốc bóng (ms)
+    projectileSpawnCount: 2,       // PROJECTILE: sinh thêm bao nhiêu vật cản
+    gravityDownMultiplier: 1.8,    // GRAVITY_DOWN: trọng lực kéo mạnh hơn
+    gravityUpMultiplier: 0.3,      // GRAVITY_UP: trọng lực yếu đi / bồng bềnh
+    gravityDurationMs: 5000,
   },
+},
 
   projectile: {
     radius: 12,
-    spawnInterval: 8,
-    speed: 5,
-    lifetimeMs: 7000,
-    edgePadding: 32,
+    spawnInterval: 10,  // Khoảng thời gian (tính bằng giây) giữa các lần sinh ra vật cản
+    speed: 4,              // Tốc độ ban đầu của vật cản khi sinh ra
+    speedIncreasePerSecond: 0.2,  // Tốc độ đạn tăng dần theo thời gian chơi
+    minSpeed: 6,       // Tốc độ tối thiểu của vật cản (đạn) khi sinh ra  
+    maxSpeed: 24,
+    lifetimeMs: 9000,
+    edgePadding: 32,  
     color: 0xff4d6d,
   },
 

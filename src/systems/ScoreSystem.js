@@ -4,6 +4,7 @@ export class ScoreSystem {
   constructor() {
     this.score = 0;
     this.bestScore = Number(localStorage.getItem('bd_best_score')) || 0;
+    this.multiplier = 1;
   }
 
   getBestScore() {
@@ -14,20 +15,25 @@ export class ScoreSystem {
     return this.score;
   }
 
+  setMultiplier(multiplier) {
+    this.multiplier = multiplier;
+  }
+
   addBouncePoints() {
-    this.score += GameConfig.scoring.pointsPerBounce;
+    this.score += GameConfig.scoring.pointsPerBounce * this.multiplier;
   }
 
   addPoints(points) {
-    this.score += points;
+    this.score += points * this.multiplier;
   }
 
   addTimeElapsed(deltaSeconds) {
-    this.score += GameConfig.scoring.pointsPerSecond * deltaSeconds;
+    this.score += GameConfig.scoring.pointsPerSecond * deltaSeconds * this.multiplier;
   }
 
   reset() {
     this.score = 0;
+    this.multiplier = 1;
   }
 
   commitHighScoreIfNeeded() {
@@ -39,7 +45,4 @@ export class ScoreSystem {
     }
     return false;
   }
-
-
-
 }
