@@ -29,7 +29,7 @@ export class OrbController {
     update(deltaTime) {
         this.timer += deltaTime;
         if (this.timer >= this.spawnCooldown) {
-            this.timer = 0;
+            this.timer -= this.spawnCooldown;  // Giữ phần thời gian dư ra để tránh mất đồng bộ
             this.spawnOrb();
         }
         const now = performance.now();

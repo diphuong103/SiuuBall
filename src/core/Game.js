@@ -11,6 +11,7 @@ import { GameplayHUD } from "../ui/GameplayHUD.js";
 import { MainMenu } from "../ui/MainMenu.js";
 import { GameOverPopup } from "../ui/GameOverPopup.js";
 import { SettingsPopup } from "../ui/SettingsPopup.js";
+import { GuidePopup } from "../ui/GuidePopup.js";
 import { CollisionManager } from "../gameplay/CollisionManager.js";
 import { BounceController } from "../gameplay/BounceController.js";
 import { GameConfig } from "../config/GameConfig.js";
@@ -20,6 +21,7 @@ import { OrbEffectSystem } from "../gameplay/OrbEffectSystem.js";
 import { OrbController } from "../gameplay/OrbController.js";
 import { ProjectileController } from "../gameplay/ProjectileController.js";
 import { EffectToast } from "../ui/EffectToast.js";
+import { EffectBar } from "../ui/EffectBar.js";
 
 export class Game {
   constructor() {
@@ -139,8 +141,13 @@ export class Game {
     // 6. Init UI (add SAU gameplayLayer nên luôn nằm trên)
     this.hud = new GameplayHUD(this.app.screen.width);
     this.effectToast = new EffectToast(this.app.screen.width);
+    this.effectBar = new EffectBar(this.app.screen.width);
     this.mainMenu = new MainMenu(this.app.screen.width, this.app.screen.height);
     this.SettingsPopup = new SettingsPopup(
+      this.app.screen.width,
+      this.app.screen.height,
+    );
+    this.guidePopup = new GuidePopup(
       this.app.screen.width,
       this.app.screen.height,
     );
@@ -151,14 +158,19 @@ export class Game {
 
     this.app.stage.addChild(this.hud.container);
     this.app.stage.addChild(this.effectToast.container);
+    this.app.stage.addChild(this.effectBar.container);
     this.app.stage.addChild(this.mainMenu.container);
     this.app.stage.addChild(this.SettingsPopup.container);
     this.app.stage.addChild(this.gameOverPopup.container);
+    this.app.stage.addChild(this.guidePopup.container);
 
     // --- MainMenu events ---
     this.mainMenu.onStart(() => this.startGame());
     this.mainMenu.onSoundSetting(() => this.showSoundSettings());
     this.mainMenu.onSettings(() => this.showSoundSettings());
+    this.mainMenu.onHelp(() => this.showGuidePopup());
+
+    this.guidePopup.onClose(() => this.hideGuidePopup());
 
     // Chọn bóng qua slideshow trái/phải
     this.mainMenu.onBallChange((ballOption) => {
@@ -281,6 +293,7 @@ export class Game {
     this.removeCurrentLine();
     this.spawnManager?.clear?.();
     this.effectSystem?.clear();
+    if (this.effectBar) this.effectBar.update([]);
     this.setShield(false);
     this.setGravityScale(GameConfig.physics.gravity);
     this.projectileController?.clear();
@@ -324,6 +337,14 @@ export class Game {
     this.SettingsPopup.hide();
   }
 
+  showGuidePopup() {
+    this.guidePopup.show();
+  }
+
+  hideGuidePopup() {
+    this.guidePopup.hide();
+  }
+
   consumeShieldIfActive() {
     if (!this.isShielded) return false;
     this.setShield(false);
@@ -331,7 +352,7 @@ export class Game {
   }
 
   // Cập nhật trạng
-  update() { 
+  update() {
     if (this.gameState !== GameState.PLAYING) return;
     const deltaSeconds = this.app.ticker.deltaMS / 1000;
 
@@ -342,6 +363,7 @@ export class Game {
     this.projectileController.update(deltaSeconds);
     this.effectSystem.update();
     this.effectToast.update(deltaSeconds);
+    this.effectBar.update(this.effectSystem.getActiveEffects(performance.now()));
 
     if (this.currentLine && this.currentLine.isExpired(performance.now())) {
       this.removeCurrentLine();

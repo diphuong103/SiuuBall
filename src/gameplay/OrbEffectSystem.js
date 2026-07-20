@@ -126,6 +126,13 @@ export class OrbEffectSystem {
     });
   }
 
+  getActiveEffects(now = performance.now()) {
+    return this.effects.map((active) => ({
+      ...active.effect,
+      remainingTimeMs: Math.max(0, active.expiresAt - now),
+    }));
+  }
+
   clear() {
     for (const active of this.effects) this._revert(active.effect.type);
     this.effects = [];

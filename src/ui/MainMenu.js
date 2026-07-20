@@ -469,22 +469,8 @@ export class MainMenu {
         this.helpButton.eventMode = "static";
         this.helpButton.cursor = "pointer";
 
-        this.tooltipBox = this._createTooltip("Vẽ đường thẳng để\nnảy bóng qua vùng nguy hiểm.");
-        this.tooltipBox.position.set(
-            this.helpButton.x - this.tooltipBox.width,
-            this.helpButton.y + iconSize + 10,
-        );
-        this.tooltipBox.visible = false;
-        this.container.addChild(this.tooltipBox);
-
-        this.helpButton.on("pointerover", () => {
-            helpBg.tint = 0x4caf50;
-            this.tooltipBox.visible = true;
-        });
-        this.helpButton.on("pointerout", () => {
-            helpBg.tint = 0xffffff;
-            this.tooltipBox.visible = false;
-        });
+        this.helpButton.on("pointerover", () => { helpBg.tint = 0x4caf50; });
+        this.helpButton.on("pointerout", () => { helpBg.tint = 0xffffff; });
 
         this.container.addChild(this.helpButton);
 
@@ -577,6 +563,11 @@ export class MainMenu {
     /** Nút SETTINGS dưới Play — dùng cho SoundSettingPopup hệ thống */
     onSettings(callback) {
         this.settingsButton.on("pointerdown", callback);
+    }
+
+    /** Icon i góc trên — mở GuidePopup */
+    onHelp(callback) {
+        this.helpButton.on("pointerdown", callback);
     }
 
     /** Icon loa góc trên — toggle nhanh mute/unmute */

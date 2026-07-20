@@ -28,7 +28,7 @@ export const GameConfig = {
 
     speedIncreaseInterval: 2,  // Khoảng thời gian (tính bằng giây) sau đó tốc độ sẽ tăng lên
 
-    speedIncreaseAmount: 0.5,  // Số lượng tốc độ tăng lên sau mỗi khoảng thời gian (speedIncreaseInterval)
+    speedIncreaseAmount: 0.2,  // Số lượng tốc độ tăng lên sau mỗi khoảng thời gian (speedIncreaseInterval)
   },
 
   drawLine: {
@@ -83,6 +83,7 @@ orb: {
     lifetimeMs: 9000,
     edgePadding: 32,  
     color: 0xff4d6d,
+    maxActive: 6,  // Số lượng vật cản tối đa có thể tồn tại cùng lúc trên màn hình
   },
 
   debug: {
