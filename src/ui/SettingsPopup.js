@@ -57,21 +57,7 @@ export class SettingsPopup extends BaseUI {
 
         let currentY = panelY + 110;
 
-        // --- Sound Toggle ---
-        this.soundToggle = new ToggleButton('Sound', true, {
-            trackWidth: 48, trackHeight: 24, fontSize: 20,
-        });
-        this.soundToggle.position.set(panelX + 40, currentY);
-        this.container.addChild(this.soundToggle);
-        currentY += 50;
 
-        // --- Music Toggle ---
-        this.musicToggle = new ToggleButton('Music', true, {
-            trackWidth: 48, trackHeight: 24, fontSize: 20,
-        });
-        this.musicToggle.position.set(panelX + 40, currentY);
-        this.container.addChild(this.musicToggle);
-        currentY += 60;
 
         // --- Difficulty Label ---
         const diffLabel = new Text({
@@ -81,7 +67,7 @@ export class SettingsPopup extends BaseUI {
         diffLabel.position.set(panelX + 40, currentY);
         this.container.addChild(diffLabel);
 
-        currentY += 40;
+        currentY += 100;
 
         // --- Difficulty Buttons ---
         this.btnEasy = new UIButton('EASY', { width: 90, height: 40, bgColor: 0x4CAF50, fontSize: 16 });
@@ -96,7 +82,7 @@ export class SettingsPopup extends BaseUI {
         this.btnHard.position.set(panelX + 305, currentY);
         this.container.addChild(this.btnHard);
 
-        currentY += 70;
+        currentY += 50;
 
         // --- Reset Best Score ---
         this.btnReset = new UIButton('RESET BEST SCORE', { width: 220, height: 40, bgColor: 0x883333, fontSize: 16 });
@@ -236,8 +222,6 @@ export class SettingsPopup extends BaseUI {
 
     // --- Hooks ---
     onClose(callback) { this.closeButton.onClick(callback); }
-    onSoundToggle(callback) { this.soundToggle.onToggle(callback); }
-    onMusicToggle(callback) { this.musicToggle.onToggle(callback); }
     onDifficultySelect(callback) { this._onDifficultyCb = callback; }
     onResetScore(callback) { this._onResetScoreCb = callback; }
 }

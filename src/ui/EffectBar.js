@@ -69,4 +69,8 @@ export class EffectBar {
     hide() {
         this.container.visible = false;
     }
+
+    clear() {
+        this.iconsLayer.removeChildren();
+    }
 }

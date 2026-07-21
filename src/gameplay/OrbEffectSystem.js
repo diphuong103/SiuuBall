@@ -4,6 +4,7 @@ import { OrbEffects } from "./OrbEffects.js";
 import { OrbEffectType } from "./OrbEffectType.js";
 import { GameConfig } from "../config/GameConfig.js";
 import Matter from "matter-js";
+import { Random } from "../utils/Random.js";
 
 export class OrbEffectSystem {
   constructor(game) {
@@ -35,7 +36,7 @@ export class OrbEffectSystem {
       (total, effect) => total + effect.weight,
       0,
     );
-    let roll = Math.random() * totalWeight;
+    let roll = Random.float(0, totalWeight);
     for (const effect of pool) {
       roll -= effect.weight;
       if (roll <= 0) return effect;
@@ -93,14 +94,31 @@ export class OrbEffectSystem {
         const count = cfg.projectileSpawnCount ?? 1;
         const ball = this.game.ball;
         for (let i = 0; i < count; i++) {
+          this.game.playSound?.("bullets");
           this.game.projectileController?.spawnProjectile(ball.body.position);
         }
         break;
       }
 
-      case OrbEffectType.GRAVITY_DOWN:
+      case OrbEffectType.GRAVITY_DOWN: {
+        const v = this.game.ball.body.velocity;
+        Matter.Body.setVelocity(this.game.ball.body, {
+          x: v.x * 0.75,
+          y: v.y * 0.75,
+        });
         this.game.setGravityScale?.(cfg.gravityDownMultiplier);
         break;
+      }
+
+      case OrbEffectType.GRAVITY_UP: {
+        const v = this.game.ball.body.velocity;
+        Matter.Body.setVelocity(this.game.ball.body, {
+          x: v.x * 0.8,
+          y: v.y * 0.8,
+        });
+        this.game.setGravityScale?.(cfg.gravityUpMultiplier);
+        break;
+      }
 
       case OrbEffectType.GRAVITY_UP:
         this.game.setGravityScale?.(cfg.gravityUpMultiplier);

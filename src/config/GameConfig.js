@@ -52,7 +52,7 @@ export const GameConfig = {
   // GameConfig.js — bổ sung vào orb.effects
 orb: {
   radius: 22,
-  spawnInterval: 12,
+  spawnInterval: 6,
   lifetimeMs: 9000,
   edgePadding: 70,
   color: 0xa855f7,
@@ -67,8 +67,8 @@ orb: {
     speedUpMultiplier: 1.4,        // SPEED_UP: tăng tốc bóng
     speedUpDurationMs: 5000,       // Thời gian tăng tốc bóng (ms)
     projectileSpawnCount: 2,       // PROJECTILE: sinh thêm bao nhiêu vật cản
-    gravityDownMultiplier: 1.8,    // GRAVITY_DOWN: trọng lực kéo mạnh hơn
-    gravityUpMultiplier: 0.3,      // GRAVITY_UP: trọng lực yếu đi / bồng bềnh
+    gravityDownMultiplier: 1.4,    // GRAVITY_DOWN: trọng lực kéo mạnh hơn
+    gravityUpMultiplier: 0.6,      // GRAVITY_UP: trọng lực yếu đi / bồng bềnh
     gravityDurationMs: 5000,
   },
 },

@@ -1,5 +1,6 @@
 import { GameConfig } from "../config/GameConfig.js";
 import { Projectile } from "../entities/Projectile.js";
+import { Random } from "../utils/Random.js";
 
 export class ProjectileController {
   constructor(spawnManager, getTarget) {
@@ -19,14 +20,14 @@ export class ProjectileController {
     const padding = GameConfig.projectile.edgePadding;
     const width = this.spawnManager.width;
     const height = this.spawnManager.height;
-    const side = Math.floor(Math.random() * 4);
+    const side = Random.int(0, 3);
 
     let position;
 
     switch (side) {
       case 0: // Cạnh trên (top)
         position = {
-          x: Math.random() * width,
+          x: Random.float(0, width),
           y: padding,
         };
         break;
@@ -34,13 +35,13 @@ export class ProjectileController {
       case 1: // Cạnh phải (right)
         position = {
           x: width - padding,
-          y: Math.random() * height,
+          y: Random.float(0, height),
         };
         break;
 
       case 2: // Cạnh dưới (bottom)
         position = {
-          x: Math.random() * width,
+          x: Random.float(0, width),
           y: height - padding,
         };
         break;
@@ -48,7 +49,7 @@ export class ProjectileController {
       default: // side === 3, Cạnh trái (left)
         position = {
           x: padding,
-          y: Math.random() * height,
+          y: Random.float(0, height),
         };
         break;
     }
@@ -63,7 +64,7 @@ export class ProjectileController {
       Math.max(
         projectileConfig.minSpeed,
         projectileConfig.speed +
-          this.elapsedTime * projectileConfig.speedIncreasePerSecond,
+        this.elapsedTime * projectileConfig.speedIncreasePerSecond,
       ),
     );
     const projectile = new Projectile(position.x, position.y, {
@@ -108,6 +109,12 @@ export class ProjectileController {
 
   handleCollision(projectile) {
     this.remove(projectile);
+  }
+
+  reset() {
+    this.clear();
+    this.timer = 0;
+    this.elapsedTime = 0;
   }
 
   remove(projectile) {

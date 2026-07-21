@@ -15,10 +15,10 @@ export class InputManager {
     this.handlePointerMove = this.handlePointerMove.bind(this);
     this.handlePointerUp = this.handlePointerUp.bind(this);
 
-    this.canvas.addEventListener('pointerdown', this.handlePointerDown);
-    this.canvas.addEventListener('pointermove', this.handlePointerMove);
-    this.canvas.addEventListener('pointerup', this.handlePointerUp);
-    this.canvas.addEventListener('pointerleave', this.handlePointerUp);
+    this.canvas.addEventListener("pointerdown", this.handlePointerDown);
+    this.canvas.addEventListener("pointermove", this.handlePointerMove);
+    this.canvas.addEventListener("pointerup", this.handlePointerUp);
+    this.canvas.addEventListener("pointerleave", this.handlePointerUp);
   }
 
   getPos(e) {
@@ -27,7 +27,7 @@ export class InputManager {
     const scaleY = this.canvas.height / rect.height;
     return {
       x: (e.clientX - rect.left) * scaleX,
-      y: (e.clientY - rect.top) * scaleY
+      y: (e.clientY - rect.top) * scaleY,
     };
   }
 
@@ -48,5 +48,16 @@ export class InputManager {
       this.onDrawComplete(this.points);
     }
     this.points = [];
+  }
+
+  destroy() {
+    this.canvas.removeEventListener("pointerdown", this.handlePointerDown);
+    this.canvas.removeEventListener("pointermove", this.handlePointerMove);
+    this.canvas.removeEventListener("pointerup", this.handlePointerUp);
+    this.canvas.removeEventListener("pointerleave", this.handlePointerUp);
+
+    this.points = [];
+    this.onDrawComplete = null;
+    this.canvas = null;
   }
 }

@@ -7,7 +7,7 @@ import { ToggleButton } from './components/ToggleButton.js';
  * SettingsPopup — Popup cài đặt với overlay nền mờ.
  * Chứa toggle Sound, và nút Close.
  */
-export class SoundSettingPopup extends BaseUI {
+export class SoundSettingsPopup extends BaseUI {
     /**
      * @param {number} screenWidth
      * @param {number} screenHeight

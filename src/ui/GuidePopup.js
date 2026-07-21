@@ -321,12 +321,18 @@ export class GuidePopup {
         this.container.visible = true;
         if (this.scrollContent) this.scrollContent.y = 0;
         this._updateGifPosition();
-        if (this._gifEl) this._gifEl.style.display = 'block';
+        if (this._gifEl) {
+            this._gifEl.style.display = 'block';
+            this._gifEl.play().catch(() => { });
+        }
     }
 
     hide() {
         this.container.visible = false;
-        if (this._gifEl) this._gifEl.style.display = 'none';
+        if (this._gifEl) {
+            this._gifEl.style.display = 'none';
+            this._gifEl.pause();
+        }
     }
 
     destroy() {

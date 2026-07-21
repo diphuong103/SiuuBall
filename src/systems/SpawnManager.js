@@ -24,15 +24,11 @@ export class SpawnManager {
 
     this.entities.delete(entity);
 
-    if (!entity.isActive) return;
-
     if (entity.body) {
       this.physics.remove(entity.body);
     }
 
-    if (typeof entity.destroy === "function") {
-      entity.destroy();
-    }
+    entity.destroy?.();
   }
 
   clear() {

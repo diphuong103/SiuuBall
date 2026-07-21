@@ -30,6 +30,7 @@ export class Projectile {
   }
 
   destroy() {
+    if (!this.isActive) return;
     this.isActive = false;
     this.container.removeFromParent();
     this.container.destroy({ children: true });

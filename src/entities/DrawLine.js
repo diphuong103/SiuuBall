@@ -65,4 +65,10 @@ export class DrawLine {
   isExpired(now) {
     return now >= this.expiresAt;
   }
+
+ destroy() {
+  this.graphics?.destroy();
+  this.bodies = [];
+  this.graphics = null;
+}
 }

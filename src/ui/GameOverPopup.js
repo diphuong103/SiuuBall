@@ -1,8 +1,11 @@
 import { Container, Text, Graphics, TextStyle } from 'pixi.js';
+import gameOverSfx from '../assets/audio/sfx/game_over.mp3';
 
 export class GameOverPopup {
   constructor(screenWidth, screenHeight) {
     this.container = new Container();
+    this._gameOverSfx = new Audio(gameOverSfx);
+    this._gameOverSfx.volume = 0.8;
 
     // ===== Nền ngoài cùng: vẫn mờ (translucent) =====
     const bg = new Graphics();
@@ -131,6 +134,8 @@ export class GameOverPopup {
     this.scoreText.text = `Score: ${Math.floor(score)}`;
     this.bestScoreText.text = `Best: ${Math.floor(bestScore)}`;
     this.container.visible = true;
+    this._gameOverSfx.currentTime = 0;
+    this._gameOverSfx.play().catch(() => {});
   }
 
   hide() {

@@ -83,6 +83,7 @@ export class MysteryOrb {
     }
 
     destroy() {
+        if (!this.isActive) return;
         this.isActive = false;
         this.container.removeFromParent();
         this.container.destroy({ children: true });
