@@ -36,10 +36,10 @@ export class MainMenu {
         this._onBallChangeCb = null;
         this._onColorSelectCb = null;
 
-        // ===== Background đậm =====
+        // ===== Background đậm (bán trong suốt để thấy ảnh nền) =====
         const bg = new Graphics();
         bg.rect(0, 0, screenWidth, screenHeight);
-        bg.fill({ color: 0x0a0a0a, alpha: 1 });
+        bg.fill({ color: 0x0a0a0a, alpha: 0 }); // Đổi alpha thành 0 để hiện background ảnh đằng sau
         bg.eventMode = "static";
         this.container.addChild(bg);
 
@@ -58,7 +58,7 @@ export class MainMenu {
                 distance: 6,
             },
         });
-        const titleText = new Text({ text: "SIUUBALL", style: titleStyle });
+        const titleText = new Text({ text: "", style: titleStyle });
         titleText.anchor.set(0.5);
         titleText.position.set(screenWidth / 2, screenHeight * 0.14);
         this.container.addChild(titleText);

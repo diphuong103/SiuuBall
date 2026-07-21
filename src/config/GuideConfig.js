@@ -13,7 +13,7 @@ export const GuideConfig = {
         {
             name: "Mystery Orb",
             type: "Mystery",
-            description: "Random một trong các hiệu ứng còn lại.",
+            description: "Random một hiệu ứng ngẫu nhiên",
             duration: "",
             color: GameConfig.orb.color
         },

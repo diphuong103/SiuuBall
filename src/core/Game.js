@@ -22,6 +22,7 @@ import { OrbController } from "../gameplay/OrbController.js";
 import { ProjectileController } from "../gameplay/ProjectileController.js";
 import { EffectToast } from "../ui/EffectToast.js";
 import { EffectBar } from "../ui/EffectBar.js";
+import { BackgroundManager } from "../systems/BackgroundManager.js";
 
 export class Game {
   constructor() {
@@ -53,6 +54,8 @@ export class Game {
     this.gameplayLayer = new Container();
     this.app.stage.addChild(this.gameplayLayer);
 
+    this.backgroundManager = new BackgroundManager(this.app);
+
     // 2. Init Physics
     this.physics = new PhysicsWorld();
 
@@ -68,6 +71,9 @@ export class Game {
     wallBodies.forEach((body) => this.physics.add(body));
     this.gameplayLayer.addChild(wallGraphics);
 
+    await this.backgroundManager.setBackground(
+      "/src/assets/textures/background/bg_mainmenu.png"
+    );
     this.ball = new Ball(this.app.screen.width / 2, this.app.screen.height / 2);
     this.physics.add(this.ball.body);
     this.gameplayLayer.addChild(this.ball.graphics);
@@ -150,6 +156,7 @@ export class Game {
     this.guidePopup = new GuidePopup(
       this.app.screen.width,
       this.app.screen.height,
+      this.app.canvas,
     );
     this.gameOverPopup = new GameOverPopup(
       this.app.screen.width,
@@ -224,6 +231,8 @@ export class Game {
     this.gameState = GameState.MENU;
     this.mainMenu.show();
     this.gameOverPopup.hide();
+    this.gameplayLayer.visible = false;
+    this.hud.hide();
   }
 
   applyBallAppearance() {
@@ -268,10 +277,15 @@ export class Game {
     this.currentLine = null;
   }
 
-  startGame() {
+  async startGame() {
     this.gameState = GameState.PLAYING;
     this.mainMenu.hide();
     this.gameOverPopup.hide();
+    this.gameplayLayer.visible = true;
+    this.hud.show();
+    await this.backgroundManager.setBackground(
+      "/src/assets/textures/background/bg_gameplay.png"
+    );
   }
 
   gameOver() {
@@ -299,6 +313,7 @@ export class Game {
     this.projectileController?.clear();
     this.orbController?.clear();
     this.orbController.timer = 0;
+    this.effectBar.clear();
     this.projectileController.timer = 0; // Reset cooldown timer for projectile spawning
 
     // Reset điểm và độ khó
@@ -315,18 +330,23 @@ export class Game {
     this.applyBallAppearance();
   }
 
-  restartGame() {
+  async restartGame() {
     this.resetGameplay();
     this.createNewBall();
-    this.startGame();
+    await this.startGame();
   }
 
-  goToMenu() {
+  async goToMenu() {
     this.gameState = GameState.MENU;
     this.gameOverPopup.hide();
     this.resetGameplay();
     this.createNewBall();
     this.mainMenu.show();
+    this.gameplayLayer.visible = false;
+    this.hud.hide();
+    await this.backgroundManager.setBackground(
+      "/src/assets/textures/background/bg_mainmenu.png"
+    );
   }
 
   showSoundSettings() {

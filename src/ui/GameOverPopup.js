@@ -19,7 +19,7 @@ export class GameOverPopup {
 
     const panel = new Graphics();
     panel.roundRect(panelX, panelY, panelWidth, panelHeight, 24);
-    panel.fill({ color: 0x1a1a1a, alpha: 1 }); // đặc, không mờ
+    panel.fill({ color: 0x1a1a1a, alpha: 0.95 }); // đặc vừa phải, đồng bộ các popup khác
     panel.stroke({ width: 3, color: 0xff4444, alpha: 0.8 }); // viền nhấn nhá theo tông "Game Over"
     this.container.addChild(panel);
 

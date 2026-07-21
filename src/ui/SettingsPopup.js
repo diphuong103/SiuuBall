@@ -20,7 +20,7 @@ export class SettingsPopup extends BaseUI {
         // --- Overlay nền bán trong suốt ---
         this.overlay = new Graphics();
         this.overlay.rect(0, 0, screenWidth, screenHeight);
-        this.overlay.fill({ color: 0x000000, alpha: 0.75 });
+        this.overlay.fill({ color: 0x000000, alpha: 0.8 });
         this.overlay.eventMode = 'static'; // Chặn click xuyên qua
         this.container.addChild(this.overlay);
 
@@ -32,7 +32,7 @@ export class SettingsPopup extends BaseUI {
 
         this.panel = new Graphics();
         this.panel.roundRect(panelX, panelY, panelW, panelH, 16);
-        this.panel.fill({ color: 0x1a1a2e, alpha: 0.95 });
+        this.panel.fill({ color: 0x1a1a1a, alpha: 0.95 });
         this.container.addChild(this.panel);
 
         // --- Title ---

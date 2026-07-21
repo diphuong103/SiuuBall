@@ -1,16 +1,39 @@
-import { Container, Graphics, Text, TextStyle } from "pixi.js";
+import { Container, Graphics, Text, TextStyle, Sprite, Assets } from "pixi.js";
 import { GuideConfig } from "../config/GuideConfig.js";
 
+import doubleScoreImg from '../assets/textures/orb/double_score_orb.png';
+import slowImg from '../assets/textures/orb/Slow_Motion_Orb.png';
+import shieldImg from '../assets/textures/orb/Shield_Orb.png';
+import speedUpImg from '../assets/textures/orb/Speed_Up_Orb.png';
+import projectileImg from '../assets/textures/orb/Projectile_Orb.png';
+import gravityDownImg from '../assets/textures/orb/Gravity_Down_Orb.png';
+import gravityUpImg from '../assets/textures/orb/Gravity_Up_Orb.png';
+import mysteryImg from '../assets/textures/orb/Mystery_Orb.png';
+
+const iconMap = {
+    "Mystery Orb": mysteryImg,
+    "Double Score": doubleScoreImg,
+    "Slow Motion": slowImg,
+    "Shield": shieldImg,
+    "Speed Up": speedUpImg,
+    "Projectile": projectileImg,
+    "Gravity Down": gravityDownImg,
+    "Gravity Up": gravityUpImg
+};
+
+import guideVideo from '../assets/textures/media/guide_siuball.mp4';
+
 export class GuidePopup {
-    constructor(screenWidth, screenHeight) {
+    constructor(screenWidth, screenHeight, canvas) {
         this.container = new Container();
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
+        this._canvas = canvas;
 
         // Overlay background (darken and blur effect simulation)
         const overlay = new Graphics();
         overlay.rect(0, 0, screenWidth, screenHeight);
-        overlay.fill({ color: 0x000000, alpha: 0.85 });
+        overlay.fill({ color: 0x000000, alpha: 0.8 });
         overlay.eventMode = 'static'; // block clicks
         this.container.addChild(overlay);
 
@@ -24,7 +47,7 @@ export class GuidePopup {
 
         const modalBg = new Graphics();
         modalBg.roundRect(0, 0, modalWidth, modalHeight, 16);
-        modalBg.fill({ color: 0x1f1f1f, alpha: 1 });
+        modalBg.fill({ color: 0x1a1a1a, alpha: 0.95 });
         modalBg.stroke({ width: 2, color: 0x4caf50 });
         this.modal.addChild(modalBg);
 
@@ -41,21 +64,38 @@ export class GuidePopup {
         this.closeIcon = this._createCloseIcon(modalWidth - 25, 25);
         this.modal.addChild(this.closeIcon);
 
-        // Illustration Section (Placeholder video/gif)
+        // Illustration Section — GIF overlay
         const graphicY = 70;
-        const graphicHeight = modalHeight * 0.3; // almost a third/half
+        const graphicHeight = modalHeight * 0.3;
         const illustrationBox = new Graphics();
         illustrationBox.roundRect(20, graphicY, modalWidth - 40, graphicHeight, 8);
-        illustrationBox.fill({ color: 0x333333, alpha: 1 });
+        illustrationBox.fill({ color: 0x111111, alpha: 1 });
+        this.modal.addChild(illustrationBox);
 
-        const placeholderText = new Text({
-            text: "Illustration\n(Video / GIF Placeholder)",
-            style: new TextStyle({ fontFamily: "Arial", fontSize: 18, fill: 0x888888, align: 'center' })
-        });
-        placeholderText.anchor.set(0.5);
-        placeholderText.position.set(modalWidth / 2, graphicY + graphicHeight / 2);
+        // DOM <img> for the GIF — stored so we can position + toggle it
+        this._modalX = screenWidth / 2 - modalWidth / 2;
+        this._modalY = screenHeight / 2 - modalHeight / 2;
+        this._gifBoxX = this._modalX + 20;      // illustrationBox local x relative to modal
+        this._gifBoxY = this._modalY + graphicY;
+        this._gifBoxW = modalWidth - 40;
+        this._gifBoxH = graphicHeight;
 
-        this.modal.addChild(illustrationBox, placeholderText);
+        const video = document.createElement('video');
+        video.src = guideVideo;
+        video.autoplay = true;
+        video.loop = true;
+        video.muted = true;
+        video.playsInline = true;
+        video.style.cssText = [
+            'position:absolute',
+            'object-fit:contain',
+            'border-radius:8px',
+            'pointer-events:none',
+            'display:none',
+        ].join(';');
+        document.body.appendChild(video);
+        this._gifEl = video;
+        this._updateGifPosition();
 
         // Basics Section
         const basicsY = graphicY + graphicHeight + 20;
@@ -218,11 +258,19 @@ export class GuidePopup {
 
         // Icon
         const iconRadius = 16;
-        const icon = new Graphics();
-        icon.circle(p + iconRadius, p + iconRadius + 4, iconRadius);
-        icon.fill(item.color);
-        icon.stroke({ width: 2, color: 0xffffff, alpha: 0.8 });
-        card.addChild(icon);
+        const imgPath = iconMap[item.name];
+        if (imgPath) {
+            Assets.load(imgPath).then((texture) => {
+                const sprite = new Sprite(texture);
+                sprite.anchor.set(0.5);
+                sprite.width = 44; // Lớn hơn một chút để tính cả quầng sáng (glow)
+                sprite.height = 44;
+                sprite.position.set(p + iconRadius, p + iconRadius + 4);
+                sprite.blendMode = 'screen';
+                card.addChild(sprite);
+            });
+        }
+
 
         // Title (Name + Type)
         let typeColor = 0xffffff;
@@ -250,6 +298,20 @@ export class GuidePopup {
         return card;
     }
 
+    _updateGifPosition() {
+        const canvas = this._canvas;
+        if (!canvas || !this._gifEl) return;
+        const rect = canvas.getBoundingClientRect();
+        // Scale factor between CSS pixels and logical PixiJS units
+        const scaleX = rect.width / this.screenWidth;
+        const scaleY = rect.height / this.screenHeight;
+        const el = this._gifEl;
+        el.style.left = (rect.left + this._gifBoxX * scaleX) + 'px';
+        el.style.top = (rect.top + this._gifBoxY * scaleY) + 'px';
+        el.style.width = (this._gifBoxW * scaleX) + 'px';
+        el.style.height = (this._gifBoxH * scaleY) + 'px';
+    }
+
     onClose(callback) {
         this.closeIcon.on("pointerdown", callback);
         this.bottomCloseBtn.on("pointerdown", callback);
@@ -257,11 +319,18 @@ export class GuidePopup {
 
     show() {
         this.container.visible = true;
-        // reset scroll
         if (this.scrollContent) this.scrollContent.y = 0;
+        this._updateGifPosition();
+        if (this._gifEl) this._gifEl.style.display = 'block';
     }
 
     hide() {
         this.container.visible = false;
+        if (this._gifEl) this._gifEl.style.display = 'none';
+    }
+
+    destroy() {
+        this._gifEl?.remove();
+        this.container.destroy({ children: true });
     }
 }
