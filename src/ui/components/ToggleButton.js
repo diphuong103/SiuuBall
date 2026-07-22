@@ -68,7 +68,7 @@ export class ToggleButton extends Container {
         // Interaction — cả vùng đều click được
         this.eventMode = 'static';
         this.cursor = 'pointer';
-        this.on('pointerdown', this._toggle, this);
+        this.on('pointertap', this._toggle, this);
     }
 
     /** @private */

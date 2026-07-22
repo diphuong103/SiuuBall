@@ -49,6 +49,21 @@ export class Ball {
     this.decorationContainer = new Container();
     this.container.addChild(this.decorationContainer);
 
+    this.shieldIcon = new Graphics();
+    this.shieldIcon
+      .poly([
+        0, -radius * 0.82,
+        radius * 0.64, -radius * 0.48,
+        radius * 0.5, radius * 0.3,
+        0, radius * 0.82,
+        -radius * 0.5, radius * 0.3,
+        -radius * 0.64, -radius * 0.48,
+      ])
+      .fill({ color: 0x22c55e, alpha: 0.9 })
+      .stroke({ width: 3, color: 0xffffff, alpha: 0.95 });
+    this.shieldIcon.visible = false;
+    this.container.addChild(this.shieldIcon);
+
     this._textureSprite = null;
     this._renderBallVisual(this.currentColor);
 
@@ -69,15 +84,15 @@ export class Ball {
     this._renderBallVisual(color);
   }
 
-  _clearBallVisual() {
-    for (const child of this.ballSprite.removeChildren()) {
-      child.destroy({ children: true });
-    }
-    this._textureSprite = null;
+  setShieldVisible(visible) {
+    if (this.shieldIcon) this.shieldIcon.visible = Boolean(visible);
   }
 
   setTexture(texture) {
-    this._clearBallVisual();
+    for (const child of this.ballSprite.removeChildren()) {
+      child.destroy({ children: true });
+      this._textureSprite = null;
+    }
 
     if (!texture) {
       this._renderBallVisual(this.currentColor);
@@ -86,31 +101,29 @@ export class Ball {
 
     const sprite = new Sprite(texture);
     sprite.anchor.set(0.5);
-
-    const size = Math.max(sprite.texture.width, sprite.texture.height);
-    sprite.scale.set((this.radius * 2) / size);
+    const scale =
+      (this.radius * 2) / Math.max(sprite.texture.width, sprite.texture.height);
+    sprite.scale.set(scale);
     sprite.tint = this.currentColor;
-
     this.ballSprite.addChild(sprite);
     this._textureSprite = sprite;
   }
 
   _renderBallVisual(color) {
-    this._clearBallVisual();
+    for (const child of this.ballSprite.removeChildren()) {
+      child.destroy({ children: true });
+    }
+
+    this._textureSprite = null;
 
     const shape = new Graphics();
     shape.circle(0, 0, this.radius).fill(color);
     shape.stroke({ width: 2, color: 0xffffff, alpha: 0.25 });
-
     this.ballSprite.addChild(shape);
   }
 
   destroy() {
-    this.container?.destroy({ children: true });
-
-    this.container = null;
-    this.graphics = null;
-    this.body = null;
-    this._textureSprite = null;
+    this.container.destroy({ children: true });
+    this.decorationContainer.destroy();
   }
 }

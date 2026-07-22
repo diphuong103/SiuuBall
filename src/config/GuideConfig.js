@@ -1,19 +1,19 @@
 import { GameConfig } from "./GameConfig.js";
 
 export const GuideConfig = {
-    title: "How to Play",
-    basicsTitle: "Gameplay Basics",
+    title: "CÁCH CHƠI",
+    basicsTitle: "CƠ BẢN",
     basics: `• Kéo ngón tay hoặc chuột để vẽ một đường.
 • Bóng sẽ nảy trên đường vừa vẽ.
 • Không để bóng chạm khung màu đỏ.
 • Thu thập các quả cầu để nhận hiệu ứng.
 • Né các hiệu ứng bất lợi nếu không muốn tăng độ khó.`,
-    itemsTitle: "Item Encyclopedia",
+    itemsTitle: "VẬT PHẨM",
     items: [
         {
             name: "Mystery Orb",
             type: "Mystery",
-            description: "Random một hiệu ứng ngẫu nhiên",
+            description: "Nhận một hiệu ứng ngẫu nhiên.",
             duration: "",
             color: GameConfig.orb.color
         },
@@ -34,8 +34,8 @@ export const GuideConfig = {
         {
             name: "Shield",
             type: "Buff",
-            description: "Chặn một lần Game Over.",
-            duration: "",
+            description: "Chặn một viên đạn trong 6 giây.",
+            duration: "6s",
             color: 0x4ade80
         },
         {
@@ -48,21 +48,21 @@ export const GuideConfig = {
         {
             name: "Projectile",
             type: "Debuff",
-            description: "Xuất hiện từ 2 đến 4 viên đạn bay ngang màn hình.",
+            description: "Tạo 2 viên đạn từ mép sân bay về phía bóng.",
             duration: "",
             color: 0xff4d6d
         },
         {
             name: "Gravity Down",
             type: "Debuff",
-            description: "Đổi hướng bóng lao thẳng xuống.",
+            description: "Trọng lực kéo bóng xuống mạnh hơn.",
             duration: "5s",
             color: 0x7c3aed
         },
         {
             name: "Gravity Up",
             type: "Debuff",
-            description: "Đổi hướng bóng lao thẳng lên.",
+            description: "Trọng lực kéo bóng lên trong 5 giây.",
             duration: "5s",
             color: 0x38bdf8
         }

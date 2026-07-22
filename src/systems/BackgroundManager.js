@@ -1,24 +1,23 @@
 import { Sprite, Assets } from "pixi.js";
 
 export class BackgroundManager {
-    constructor(app) {
-        this.app = app;
-        this.sprite = null;
-    }
+  constructor(app) {
+    this.app = app;
+    this.sprite = null;
+    this.loadId = 0;
+  }
 
-    async setBackground(path) {
-        const texture = await Assets.load(path);
+  async setBackground(path) {
+    const requestId = ++this.loadId;
+    const texture = await Assets.load(path);
 
-        if (this.sprite) {
-            this.app.stage.removeChild(this.sprite);
-            this.sprite.destroy();
-        }
+    if (requestId !== this.loadId) return;
 
-        this.sprite = new Sprite(texture);
+    this.sprite?.destroy();
+    this.sprite = new Sprite(texture);
+    this.sprite.width = this.app.screen.width;
+    this.sprite.height = this.app.screen.height;
 
-        this.sprite.width = this.app.screen.width;
-        this.sprite.height = this.app.screen.height;
-
-        this.app.stage.addChildAt(this.sprite, 0);
-    }
+    this.app.stage.addChildAt(this.sprite, 0);
+  }
 }

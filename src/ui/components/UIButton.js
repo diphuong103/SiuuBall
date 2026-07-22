@@ -107,7 +107,7 @@ export class UIButton extends Container {
      * @param {Function} callback
      */
     onClick(callback) {
-        this.on('pointerdown', callback);
+        this.on('pointertap', callback);
     }
 
     /**

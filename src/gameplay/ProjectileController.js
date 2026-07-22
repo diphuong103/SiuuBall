@@ -10,6 +10,7 @@ export class ProjectileController {
     this.timer = 0;
     this.projectiles = [];
     this.elapsedTime = 0;
+    this.spawnMultiplier = 1;
   }
 
   // Sinh ra một viên đạn từ một cạnh ngẫu nhiên
@@ -80,8 +81,10 @@ export class ProjectileController {
     // Cập nhật trạng thái của các viên đạn, sinh ra viên đạn mới nếu cần
     this.elapsedTime += deltaTime;
     this.timer += deltaTime;
-    if (this.timer >= this.spawnCooldown) {
+    const interval = this.spawnCooldown / this.spawnMultiplier;
+    if (this.timer >= interval) {
       this.timer -= this.spawnCooldown; // Giữ phần thời gian dư ra để tránh mất đồng bộ
+      this.timer += this.spawnCooldown - interval;
       const target = this.getTarget();
       if (target && target.body) {
         this.spawnProjectile(target.body.position);
@@ -115,6 +118,11 @@ export class ProjectileController {
     this.clear();
     this.timer = 0;
     this.elapsedTime = 0;
+    this.spawnMultiplier = 1;
+  }
+
+  setSpawnMultiplier(multiplier) {
+    this.spawnMultiplier = Math.max(1, multiplier);
   }
 
   remove(projectile) {

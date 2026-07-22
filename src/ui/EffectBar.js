@@ -73,4 +73,8 @@ export class EffectBar {
     clear() {
         this.iconsLayer.removeChildren();
     }
+
+    resize(screenWidth) {
+        this.container.x = screenWidth / 2;
+    }
 }

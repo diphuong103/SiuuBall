@@ -1,5 +1,5 @@
 import Matter from 'matter-js';
-import { Container, Sprite, Assets } from 'pixi.js';
+import { Container, Sprite, Assets, Graphics, Text, TextStyle } from 'pixi.js';
 import { GameConfig } from '../config/GameConfig.js';
 import { OrbEffectType } from '../gameplay/OrbEffectType.js';
 
@@ -11,6 +11,11 @@ import projectileImg from '../assets/textures/orb/Projectile_Orb.png';
 import gravityDownImg from '../assets/textures/orb/Gravity_Down_Orb.png';
 import gravityUpImg from '../assets/textures/orb/Gravity_Up_Orb.png';
 import mysteryImg from '../assets/textures/orb/Mystery_Orb.png';
+import score10Img from '../assets/textures/orb/10.png';
+import score20Img from '../assets/textures/orb/20.png';
+import score50Img from '../assets/textures/orb/50.png';
+import score100Img from '../assets/textures/orb/100.png';
+import score150Img from '../assets/textures/orb/150.png';
 
 const orbTextures = {
     [OrbEffectType.DOUBLE_SCORE]: doubleScoreImg,
@@ -23,18 +28,27 @@ const orbTextures = {
     [OrbEffectType.MYSTERY]: mysteryImg,
 };
 
+const scoreOrbTextures = {
+    10: score10Img,
+    20: score20Img,
+    50: score50Img,
+    100: score100Img,
+    150: score150Img,
+};
+
 const { Bodies } = Matter;
 
 export class MysteryOrb {
 
-    constructor(x, y, effect = null) {
+    constructor(x, y, effect = null, scoreValue = null) {
         const { radius, lifetimeMs } = GameConfig.orb;
         this.radius = radius;
         this.effect = effect;
+        this.scoreValue = scoreValue;
         this.body = Bodies.circle(x, y, radius, {
             isStatic: true,
             isSensor: true,
-            label: 'mystery-orb',
+            label: scoreValue === null ? 'mystery-orb' : 'score-orb',
         });
         this.createdAt = performance.now();
         this.expiresAt = this.createdAt + lifetimeMs;
@@ -44,6 +58,32 @@ export class MysteryOrb {
         // Spawn effect: Start at scale 0
         this.container.scale.set(0);
         this.isActive = true;
+
+        this.isRare = effect?.type === OrbEffectType.MYSTERY;
+        if (this.isRare) {
+            this.rareRing = new Graphics();
+            this.rareLabel = new Text({
+                text: '',
+                style: new TextStyle({ fontFamily: 'Arial', fontSize: 11, fontWeight: 'bold', fill: 0xfef3c7 }),
+            });
+            this.rareLabel.anchor.set(0.5);
+            this.rareLabel.y = -38;
+            this.container.addChild(this.rareRing, this.rareLabel);
+        }
+
+        if (scoreValue !== null) {
+            const imgPath = scoreOrbTextures[scoreValue];
+            if (!imgPath) return;
+            Assets.load(imgPath).then((texture) => {
+                if (!this.isActive) return;
+                this.sprite = new Sprite(texture);
+                this.sprite.anchor.set(0.5);
+                this.sprite.width = 56;
+                this.sprite.height = 56;
+                this.container.addChild(this.sprite);
+            });
+            return;
+        }
 
         const imgPath = effect ? (orbTextures[effect.type] || mysteryImg) : mysteryImg;
 
@@ -80,6 +120,15 @@ export class MysteryOrb {
 
         // Fade out khi gần hết hạn
         this.container.alpha = Math.min(1, Math.max(0, (this.expiresAt - now) / 700));
+
+        if (this.isRare) {
+            const remaining = Math.max(0, this.expiresAt - now);
+            const progress = remaining / GameConfig.orb.lifetimeMs;
+            this.rareRing.clear()
+                .arc(0, 0, this.radius + 9, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * progress)
+                .stroke({ width: 3, color: 0xfbbf24, alpha: 0.95 });
+            this.rareLabel.text = `${Math.ceil(remaining / 1000)}s`;
+        }
     }
 
     destroy() {

@@ -36,6 +36,10 @@ export class CollisionManager {
                     handlers.onBallHitOrb?.(pair);
                 }
 
+                if (labels.includes("main-ball") && labels.includes("score-orb")) {
+                    handlers.onBallHitScoreOrb?.(pair);
+                }
+
                 if (labels.includes("main-ball") && labels.includes("projectile")) {
                     handlers.onBallHitProjectile?.(pair);
                 }

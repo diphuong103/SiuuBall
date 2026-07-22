@@ -20,6 +20,7 @@ export const OrbEffects = Object.freeze({
     kind: 'buff',
     color: 0x60a5fa,
     weight: 14,
+    durationMs: effects.slowBallDurationMs,
   },
   [OrbEffectType.SHIELD]: {
     type: OrbEffectType.SHIELD,
@@ -35,6 +36,7 @@ export const OrbEffects = Object.freeze({
     kind: 'debuff',
     color: 0xf97316,
     weight: 14,
+    durationMs: effects.speedUpDurationMs,
   },
   [OrbEffectType.PROJECTILE]: {
     type: OrbEffectType.PROJECTILE,
@@ -49,7 +51,6 @@ export const OrbEffects = Object.freeze({
     kind: 'debuff',
     color: 0x7c3aed,
     weight: 14,
-    durationMs: effects.gravityDurationMs,
   },
   [OrbEffectType.GRAVITY_UP]: {
     type: OrbEffectType.GRAVITY_UP,
@@ -57,7 +58,6 @@ export const OrbEffects = Object.freeze({
     kind: 'debuff',
     color: 0x38bdf8,
     weight: 14,
-    durationMs: effects.gravityDurationMs,
   },
   [OrbEffectType.MYSTERY]: {
     type: OrbEffectType.MYSTERY,

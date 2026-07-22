@@ -34,4 +34,8 @@ export class EffectToast {
     this.container.alpha = Math.max(0, 1 - Math.max(0, this.elapsed - this.duration + 300) / 300);
     if (this.elapsed >= this.duration) this.container.visible = false;
   }
+
+  resize(screenWidth) {
+    this.container.x = screenWidth / 2;
+  }
 }

@@ -25,19 +25,19 @@ export class GameplayHUD {
         const marginY = 20;
 
         // Score display (Top Left)
-        const scoreLabel = new Text({ text: 'Score', style: labelStyle });
-        scoreLabel.position.set(marginX, marginY);
-        this.container.addChild(scoreLabel);
+        this.scoreLabel = new Text({ text: 'Score', style: labelStyle });
+        this.scoreLabel.position.set(marginX, marginY);
+        this.container.addChild(this.scoreLabel);
 
         this.scoreVal = new Text({ text: '0', style: valueStyle });
         this.scoreVal.position.set(marginX, marginY + 25);
         this.container.addChild(this.scoreVal);
 
         // Time display (Top Center)
-        const timeLabel = new Text({ text: 'Time', style: labelStyle });
-        timeLabel.anchor.set(0.5, 0);
-        timeLabel.position.set(screenWidth / 2, marginY);
-        this.container.addChild(timeLabel);
+        this.timeLabel = new Text({ text: 'Time', style: labelStyle });
+        this.timeLabel.anchor.set(0.5, 0);
+        this.timeLabel.position.set(screenWidth / 2, marginY);
+        this.container.addChild(this.timeLabel);
 
         this.timeVal = new Text({ text: '0s', style: valueStyle });
         this.timeVal.anchor.set(0.5, 0);
@@ -45,10 +45,10 @@ export class GameplayHUD {
         this.container.addChild(this.timeVal);
 
         // Best Score display (Top Right)
-        const bestLabel = new Text({ text: 'Best', style: labelStyle });
-        bestLabel.anchor.set(1, 0);
-        bestLabel.position.set(screenWidth - marginX, marginY);
-        this.container.addChild(bestLabel);
+        this.bestLabel = new Text({ text: 'Best', style: labelStyle });
+        this.bestLabel.anchor.set(1, 0);
+        this.bestLabel.position.set(screenWidth - marginX, marginY);
+        this.container.addChild(this.bestLabel);
 
         this.bestVal = new Text({ text: '0', style: valueStyle });
         this.bestVal.anchor.set(1, 0);
@@ -60,6 +60,20 @@ export class GameplayHUD {
         this.scoreVal.text = `${Math.floor(score)}`;
         this.bestVal.text = `${Math.floor(bestScore)}`;
         this.timeVal.text = `${Math.floor(elapsedTime)}s`;
+    }
+
+    resize(screenWidth) {
+        const marginX = 20;
+        const marginY = 20;
+
+        this.scoreLabel.position.set(marginX, marginY);
+        this.scoreVal.position.set(marginX, marginY + 25);
+
+        this.timeLabel.position.set(screenWidth / 2, marginY);
+        this.timeVal.position.set(screenWidth / 2, marginY + 25);
+
+        this.bestLabel.position.set(screenWidth - marginX, marginY);
+        this.bestVal.position.set(screenWidth - marginX, marginY + 25);
     }
 
     show() {

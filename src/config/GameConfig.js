@@ -28,7 +28,17 @@ export const GameConfig = {
 
     speedIncreaseInterval: 2,  // Khoảng thời gian (tính bằng giây) sau đó tốc độ sẽ tăng lên
 
-    speedIncreaseAmount: 0.2,  // Số lượng tốc độ tăng lên sau mỗi khoảng thời gian (speedIncreaseInterval)
+    speedIncreaseAmount: 0.1,  // Số lượng tốc độ tăng lên sau mỗi khoảng thời gian (speedIncreaseInterval)
+  },
+
+  gameplayEvents: {
+    arenaChangeInterval: 60,
+    waveStartDelay: 45,
+    waveInterval: 90,
+    waveDuration: 7,
+    waveProjectileMultiplier: 3,
+    waveScoreMultiplier: 2,
+    rareOrbChance: 0.15,
   },
 
   drawLine: {
@@ -52,7 +62,8 @@ export const GameConfig = {
   // GameConfig.js — bổ sung vào orb.effects
 orb: {
   radius: 22,
-  spawnInterval: 6,
+  spawnInterval: 6,   // Cầu hiệu ứng xuất hiện thưa hơn (giây)
+  maxActive: 2,
   lifetimeMs: 9000,
   edgePadding: 70,
   color: 0xa855f7,
@@ -60,6 +71,7 @@ orb: {
   effects: {
     scoreBonus: 50,
     slowBallMultiplier: 0.65,
+    slowBallDurationMs: 5000,
     shieldDurationMs: 6000,
 
    
@@ -72,6 +84,18 @@ orb: {
     gravityDurationMs: 5000,
   },
 },
+
+  scoreOrb: {
+    spawnInterval: 2, // Cầu điểm xuất hiện thường xuyên hơn (giây)
+    maxActive: 4,
+    values: [
+      { value: 10, weight: 40 },
+      { value: 20, weight: 28 },
+      { value: 50, weight: 17 },
+      { value: 100, weight: 10 },
+      { value: 150, weight: 5 },
+    ],
+  },
 
   projectile: {
     radius: 12,
@@ -87,9 +111,9 @@ orb: {
   },
 
   debug: {
-    enabled: true,        // Bật/tắt toàn bộ debug
-    logCollision: true,   // Log va chạm trong collisionEnd
-    logDifficulty: true,  // Log tốc độ/level trong DifficultySystem
+    enabled: false,       // Bật/tắt toàn bộ debug
+    logCollision: false,  // Log va chạm trong collisionEnd
+    logDifficulty: false, // Log tốc độ/level trong DifficultySystem
   }
 
 };

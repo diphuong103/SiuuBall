@@ -34,7 +34,7 @@ export class SoundSettingsPopup extends BaseUI {
         this.container.addChild(this.panel);
 
         // --- Title ---
-        const title = new Text({
+        this.title = new Text({
             text: 'SETTINGS',
             style: new TextStyle({
                 fontFamily: 'Arial',
@@ -43,15 +43,15 @@ export class SoundSettingsPopup extends BaseUI {
                 fill: 0xffffff,
             }),
         });
-        title.anchor.set(0.5);
-        title.position.set(screenWidth / 2, panelY + 45);
-        this.container.addChild(title);
+        this.title.anchor.set(0.5);
+        this.title.position.set(screenWidth / 2, panelY + 45);
+        this.container.addChild(this.title);
 
         // --- Divider ---
-        const divider = new Graphics();
-        divider.rect(panelX + 20, panelY + 75, panelW - 40, 2);
-        divider.fill(0x333355);
-        this.container.addChild(divider);
+        this.divider = new Graphics();
+        this.divider.rect(panelX + 20, panelY + 75, panelW - 40, 2);
+        this.divider.fill(0x333355);
+        this.container.addChild(this.divider);
 
         // --- Sound Toggle ---
         this.soundToggle = new ToggleButton('Sound', true, {
@@ -108,5 +108,31 @@ export class SoundSettingsPopup extends BaseUI {
      */
     onMusicToggle(callback) {
         this.musicToggle.onToggle(callback);
+    }
+
+    setSoundEnabled(enabled) {
+        this.soundToggle.setState(enabled);
+    }
+
+    setMusicEnabled(enabled) {
+        this.musicToggle.setState(enabled);
+    }
+
+    resize(screenWidth, screenHeight) {
+        this.screenWidth = screenWidth;
+        this.screenHeight = screenHeight;
+
+        const panelW = 320;
+        const panelH = 300;
+        const panelX = (screenWidth - panelW) / 2;
+        const panelY = (screenHeight - panelH) / 2;
+
+        this.overlay.clear().rect(0, 0, screenWidth, screenHeight).fill({ color: 0x000000, alpha: 0.75 });
+        this.panel.clear().roundRect(panelX, panelY, panelW, panelH, 16).fill({ color: 0x1a1a2e, alpha: 0.95 });
+        this.title.position.set(screenWidth / 2, panelY + 45);
+        this.divider.clear().rect(panelX + 20, panelY + 75, panelW - 40, 2).fill(0x333355);
+        this.soundToggle.position.set(panelX + 30, panelY + 100);
+        this.musicToggle.position.set(panelX + 30, panelY + 150);
+        this.closeButton.position.set(screenWidth / 2, panelY + panelH - 45);
     }
 }

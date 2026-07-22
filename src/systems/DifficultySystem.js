@@ -9,6 +9,7 @@ export class DifficultySystem {
     this.elapsedTime = 0;
     this.currentSpeed = GameConfig.ball.startSpeed;
     this.lastLevel = 0;
+    this.speedModifiers = new Map();
   }
 
   update(deltaSeconds) {
@@ -25,10 +26,15 @@ export class DifficultySystem {
         }`);
     }
 
-    this.currentSpeed = Math.min(
+    const baseSpeed = Math.min(
       GameConfig.ball.startSpeed + level * speedIncreaseAmount,
       maxSpeed
     );
+    const modifier = [...this.speedModifiers.values()].reduce(
+      (total, value) => total * value,
+      1,
+    );
+    this.currentSpeed = baseSpeed * modifier;
   }
 
   getCurrentSpeed() {
@@ -37,6 +43,14 @@ export class DifficultySystem {
 
   getElapsedTime() {
     return this.elapsedTime;
+  }
+
+  setSpeedModifier(key, multiplier) {
+    this.speedModifiers.set(key, multiplier);
+  }
+
+  clearSpeedModifier(key) {
+    this.speedModifiers.delete(key);
   }
 }
 

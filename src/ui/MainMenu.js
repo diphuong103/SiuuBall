@@ -1,8 +1,7 @@
 import { Container, Text, Graphics, TextStyle, Sprite } from "pixi.js";
 
-import menuMusic1 from "../assets/audio/murart---acerola---speedup---part1---35_s-made-with-Voicemod_bg_music3.mp3";
-import menuMusic2 from "../assets/audio/ohne-dich-(schlaf-ich-heute-nacht-nicht-ein)-speedup-nopitch-v2-made-with-Voicemod_bgmusic.mp3";
-import menuMusic from "../assets/audio/patapim-speed-up-made-with-Voicemod_bg_music2.mp3";
+
+import menuMusic from "../assets/audio/an-do-mixi.mp3";
 import clickSfx from "../assets/audio/sfx/click.mp3";
 import hoverSfx from "../assets/audio/sfx/whoosh-sfx.mp3";
 
@@ -35,6 +34,7 @@ export class MainMenu {
     this._bgMusic = new Audio(menuMusic);
     this._bgMusic.loop = true;
     this._bgMusic.volume = 0.4;
+    this.isMusicEnabled = true;
 
     //sfx
     this._clickSfx = new Audio(clickSfx);
@@ -54,11 +54,11 @@ export class MainMenu {
     this._onColorSelectCb = null;
 
     // ===== Background đậm (bán trong suốt để thấy ảnh nền) =====
-    const bg = new Graphics();
-    bg.rect(0, 0, screenWidth, screenHeight);
-    bg.fill({ color: 0x0a0a0a, alpha: 0 }); // Đổi alpha thành 0 để hiện background ảnh đằng sau
-    bg.eventMode = "static";
-    this.container.addChild(bg);
+    this.bg = new Graphics();
+    this.bg.rect(0, 0, screenWidth, screenHeight);
+    this.bg.fill({ color: 0x0a0a0a, alpha: 0 }); // Đổi alpha thành 0 để hiện background ảnh đằng sau
+    this.bg.eventMode = "static";
+    this.container.addChild(this.bg);
 
     // ===== Title =====
     const titleStyle = new TextStyle({
@@ -75,10 +75,10 @@ export class MainMenu {
         distance: 6,
       },
     });
-    const titleText = new Text({ text: "", style: titleStyle });
-    titleText.anchor.set(0.5);
-    titleText.position.set(screenWidth / 2, screenHeight * 0.14);
-    this.container.addChild(titleText);
+    this.titleText = new Text({ text: "", style: titleStyle });
+    this.titleText.anchor.set(0.5);
+    this.titleText.position.set(screenWidth / 2, screenHeight * 0.14);
+    this.container.addChild(this.titleText);
 
     // ===== Ball selector (slideshow) =====
     this._createBallSelector(screenWidth, screenHeight);
@@ -163,11 +163,11 @@ export class MainMenu {
     this.dotsContainer.position.set(0, 90);
     this.ballSelector.addChild(this.dotsContainer);
 
-    this.leftArrow.on("pointerdown", () => {
+    this.leftArrow.on("pointertap", () => {
       this._playClickSfx();
       this._changeBall(-1);
     });
-    this.rightArrow.on("pointerdown", () => {
+    this.rightArrow.on("pointertap", () => {
       this._playClickSfx();
       this._changeBall(1);
     });
@@ -285,6 +285,13 @@ export class MainMenu {
     this._renderBall();
   }
 
+  setSelectedBallIndex(index) {
+    const len = this.ballOptions.length;
+    if (!len) return;
+    this.ballIndex = Math.min(Math.max(Number(index) || 0, 0), len - 1);
+    this._renderBall();
+  }
+
   getSelectedBall() {
     return this.ballOptions[this.ballIndex];
   }
@@ -334,7 +341,7 @@ export class MainMenu {
     this.colorButton.on("pointerout", () => {
       colorBtnBg.tint = 0xffffff;
     });
-    this.colorButton.on("pointerdown", () => {
+    this.colorButton.on("pointertap", () => {
       this._playClickSfx();
       this._toggleColorSwatches();
     });
@@ -377,7 +384,7 @@ export class MainMenu {
       swatch.on("pointerout", () => {
         swatch.scale.set(1);
       });
-      swatch.on("pointerdown", () => {
+      swatch.on("pointertap", () => {
         this._playClickSfx();
         this._selectColor(i);
       });
@@ -422,6 +429,13 @@ export class MainMenu {
 
   getSelectedColor() {
     return this.lineColors[this.selectedColorIndex];
+  }
+
+  setSelectedColorIndex(index) {
+    const len = this.lineColors.length;
+    if (!len) return;
+    this.selectedColorIndex = Math.min(Math.max(Number(index) || 0, 0), len - 1);
+    this._updateColorButtonPreview();
   }
 
   // =========================================================
@@ -642,7 +656,7 @@ export class MainMenu {
   // PUBLIC EVENT HOOKS
   // =========================================================
   onStart(callback) {
-    this.startButton.on("pointerdown", () => {
+    this.startButton.on("pointertap", () => {
       this._playClickSfx();
       callback();
     });
@@ -650,7 +664,7 @@ export class MainMenu {
 
   /** Nút SETTINGS dưới Play — dùng cho SoundSettingPopup hệ thống */
   onSettings(callback) {
-    this.settingsButton.on("pointerdown", () => {
+    this.settingsButton.on("pointertap", () => {
       this._playClickSfx();
       callback();
     });
@@ -658,7 +672,7 @@ export class MainMenu {
 
   /** Icon i góc trên — mở GuidePopup */
   onHelp(callback) {
-    this.helpButton.on("pointerdown", () => {
+    this.helpButton.on("pointertap", () => {
       this._playClickSfx();
       callback();
     });
@@ -666,7 +680,7 @@ export class MainMenu {
 
   /** Icon loa góc trên — toggle nhanh mute/unmute */
   onSoundSetting(callback) {
-    this.soundSettingButton.on("pointerdown", () => {
+    this.soundSettingButton.on("pointertap", () => {
       this._playClickSfx();
       callback();
     });
@@ -694,9 +708,51 @@ export class MainMenu {
     this._hoverSfx.play().catch(() => {});
   }
 
+  setSfxEnabled(enabled) {
+    this.isSoundOn = enabled;
+  }
+
+  setMusicEnabled(enabled) {
+    this.isMusicEnabled = Boolean(enabled);
+    this._bgMusic.muted = !this.isMusicEnabled;
+
+    if (!this.isMusicEnabled) {
+      this._bgMusic.pause();
+      return;
+    }
+
+    this.playMusic();
+  }
+
+  playMusic() {
+    if (!this.isMusicEnabled || !this.container.visible) return;
+    this._bgMusic.play().catch(() => {});
+  }
+
+  resize(screenWidth, screenHeight) {
+    this.screenWidth = screenWidth;
+    this.screenHeight = screenHeight;
+
+    this.bg.clear().rect(0, 0, screenWidth, screenHeight).fill({ color: 0x0a0a0a, alpha: 0 });
+    this.titleText.position.set(screenWidth / 2, screenHeight * 0.14);
+    this.ballSelector.position.set(screenWidth / 2, screenHeight * 0.35);
+    this.colorPickerContainer.position.set(screenWidth / 2, screenHeight * 0.52);
+    this.startButton.position.set(screenWidth / 2, screenHeight * 0.68);
+    this.settingsButton.position.set(screenWidth / 2, screenHeight * 0.68 + 66);
+
+    const iconSize = 22;
+    const padding = 20;
+    const gap = 15;
+    this.helpButton.position.set(screenWidth - padding - iconSize, padding + iconSize);
+    this.soundSettingButton.position.set(
+      screenWidth - padding - iconSize - (iconSize * 2 + gap),
+      padding + iconSize,
+    );
+  }
+
   show() {
     this.container.visible = true;
-    this._bgMusic.play().catch(() => {});
+    this.playMusic();
   }
 
   hide() {

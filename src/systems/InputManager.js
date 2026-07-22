@@ -4,8 +4,12 @@
  * không cần viết code riêng cho "mousedown" và "touchstart".
  */
 export class InputManager {
-  constructor(canvas, onDrawComplete) {
+  constructor(canvas, onDrawComplete, getLogicalSize = null) {
     this.canvas = canvas;
+    this.getLogicalSize = getLogicalSize || (() => ({
+      width: this.canvas.width,
+      height: this.canvas.height,
+    }));
     this.onDrawComplete = onDrawComplete; // hàm callback gọi khi vẽ xong
     this.isDrawing = false;
     this.points = [];
@@ -23,8 +27,9 @@ export class InputManager {
 
   getPos(e) {
     const rect = this.canvas.getBoundingClientRect();
-    const scaleX = this.canvas.width / rect.width;
-    const scaleY = this.canvas.height / rect.height;
+    const { width, height } = this.getLogicalSize();
+    const scaleX = width / rect.width;
+    const scaleY = height / rect.height;
     return {
       x: (e.clientX - rect.left) * scaleX,
       y: (e.clientY - rect.top) * scaleY,
@@ -58,6 +63,7 @@ export class InputManager {
 
     this.points = [];
     this.onDrawComplete = null;
+    this.getLogicalSize = null;
     this.canvas = null;
   }
 }

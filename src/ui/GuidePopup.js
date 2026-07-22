@@ -31,34 +31,36 @@ export class GuidePopup {
         this._canvas = canvas;
 
         // Overlay background (darken and blur effect simulation)
-        const overlay = new Graphics();
-        overlay.rect(0, 0, screenWidth, screenHeight);
-        overlay.fill({ color: 0x000000, alpha: 0.8 });
-        overlay.eventMode = 'static'; // block clicks
-        this.container.addChild(overlay);
+        this.overlay = new Graphics();
+        this.overlay.rect(0, 0, screenWidth, screenHeight);
+        this.overlay.fill({ color: 0x000000, alpha: 0.8 });
+        this.overlay.eventMode = 'static'; // block clicks
+        this.container.addChild(this.overlay);
 
         // Main modal
         this.modal = new Container();
 
         const modalWidth = screenWidth * 0.9;
         const modalHeight = screenHeight * 0.85;
+        this.modalWidth = modalWidth;
+        this.modalHeight = modalHeight;
         this.modal.position.set(screenWidth / 2 - modalWidth / 2, screenHeight / 2 - modalHeight / 2);
         this.container.addChild(this.modal);
 
-        const modalBg = new Graphics();
-        modalBg.roundRect(0, 0, modalWidth, modalHeight, 16);
-        modalBg.fill({ color: 0x1a1a1a, alpha: 0.95 });
-        modalBg.stroke({ width: 2, color: 0x4caf50 });
-        this.modal.addChild(modalBg);
+        this.modalBg = new Graphics();
+        this.modalBg.roundRect(0, 0, modalWidth, modalHeight, 16);
+        this.modalBg.fill({ color: 0x1a1a1a, alpha: 0.95 });
+        this.modalBg.stroke({ width: 2, color: 0x4caf50 });
+        this.modal.addChild(this.modalBg);
 
         // Header Title
         const titleStyle = new TextStyle({
             fontFamily: "Arial", fontSize: 28, fontWeight: "bold", fill: 0xffffff, align: "center"
         });
-        const title = new Text({ text: GuideConfig.title, style: titleStyle });
-        title.anchor.set(0.5, 0);
-        title.position.set(modalWidth / 2, 20);
-        this.modal.addChild(title);
+        this.title = new Text({ text: GuideConfig.title, style: titleStyle });
+        this.title.anchor.set(0.5, 0);
+        this.title.position.set(modalWidth / 2, 20);
+        this.modal.addChild(this.title);
 
         // Close Button (Top right)
         this.closeIcon = this._createCloseIcon(modalWidth - 25, 25);
@@ -67,10 +69,10 @@ export class GuidePopup {
         // Illustration Section — GIF overlay
         const graphicY = 70;
         const graphicHeight = modalHeight * 0.3;
-        const illustrationBox = new Graphics();
-        illustrationBox.roundRect(20, graphicY, modalWidth - 40, graphicHeight, 8);
-        illustrationBox.fill({ color: 0x111111, alpha: 1 });
-        this.modal.addChild(illustrationBox);
+        this.illustrationBox = new Graphics();
+        this.illustrationBox.roundRect(20, graphicY, modalWidth - 40, graphicHeight, 8);
+        this.illustrationBox.fill({ color: 0x111111, alpha: 1 });
+        this.modal.addChild(this.illustrationBox);
 
         // DOM <img> for the GIF — stored so we can position + toggle it
         this._modalX = screenWidth / 2 - modalWidth / 2;
@@ -100,20 +102,21 @@ export class GuidePopup {
         // Basics Section
         const basicsY = graphicY + graphicHeight + 20;
         const basicsTitleStyle = new TextStyle({ fontFamily: "Arial", fontSize: 20, fontWeight: "bold", fill: 0x4caf50 });
-        const basicsTitle = new Text({ text: GuideConfig.basicsTitle, style: basicsTitleStyle });
-        basicsTitle.position.set(20, basicsY);
-        this.modal.addChild(basicsTitle);
+        this.basicsTitleStyle = basicsTitleStyle;
+        this.basicsTitle = new Text({ text: GuideConfig.basicsTitle, style: basicsTitleStyle });
+        this.basicsTitle.position.set(20, basicsY);
+        this.modal.addChild(this.basicsTitle);
 
         const basicsStyle = new TextStyle({ fontFamily: "Arial", fontSize: 16, fill: 0xdddddd, wordWrap: true, wordWrapWidth: modalWidth - 40, lineHeight: 22 });
-        const basicsText = new Text({ text: GuideConfig.basics, style: basicsStyle });
-        basicsText.position.set(20, basicsY + 30);
-        this.modal.addChild(basicsText);
+        this.basicsText = new Text({ text: GuideConfig.basics, style: basicsStyle });
+        this.basicsText.position.set(20, basicsY + 30);
+        this.modal.addChild(this.basicsText);
 
         // Item Encyclopedia Section (Scrollable)
-        const itemsY = basicsY + 30 + basicsText.height + 20;
-        const itemsTitle = new Text({ text: GuideConfig.itemsTitle, style: basicsTitleStyle });
-        itemsTitle.position.set(20, itemsY);
-        this.modal.addChild(itemsTitle);
+        const itemsY = basicsY + 30 + this.basicsText.height + 20;
+        this.itemsTitle = new Text({ text: GuideConfig.itemsTitle, style: basicsTitleStyle });
+        this.itemsTitle.position.set(20, itemsY);
+        this.modal.addChild(this.itemsTitle);
 
         const listY = itemsY + 30;
         // Leave room for the Close button at the bottom (approx 80px)
@@ -181,6 +184,7 @@ export class GuidePopup {
 
         // Mask
         const mask = new Graphics();
+        this.listMask = mask;
         mask.position.set(x, y);
         mask.rect(0, 0, width, height);
         mask.fill(0xffffff);
@@ -261,6 +265,7 @@ export class GuidePopup {
         const imgPath = iconMap[item.name];
         if (imgPath) {
             Assets.load(imgPath).then((texture) => {
+                if (card.destroyed) return;
                 const sprite = new Sprite(texture);
                 sprite.anchor.set(0.5);
                 sprite.width = 44; // Lớn hơn một chút để tính cả quầng sáng (glow)
@@ -312,9 +317,66 @@ export class GuidePopup {
         el.style.height = (this._gifBoxH * scaleY) + 'px';
     }
 
+    resize(screenWidth, screenHeight) {
+        if (screenWidth === this.screenWidth && screenHeight === this.screenHeight) {
+            this._updateGifPosition();
+            return;
+        }
+
+        this.screenWidth = screenWidth;
+        this.screenHeight = screenHeight;
+
+        const modalWidth = screenWidth * 0.9;
+        const modalHeight = screenHeight * 0.85;
+        const modalX = screenWidth / 2 - modalWidth / 2;
+        const modalY = screenHeight / 2 - modalHeight / 2;
+        const graphicY = 70;
+        const graphicHeight = modalHeight * 0.3;
+
+        this.modalWidth = modalWidth;
+        this.modalHeight = modalHeight;
+        this.modal.position.set(modalX, modalY);
+
+        this.overlay.clear().rect(0, 0, screenWidth, screenHeight).fill({ color: 0x000000, alpha: 0.8 });
+        this.modalBg.clear()
+            .roundRect(0, 0, modalWidth, modalHeight, 16)
+            .fill({ color: 0x1a1a1a, alpha: 0.95 })
+            .stroke({ width: 2, color: 0x4caf50 });
+        this.title.position.set(modalWidth / 2, 20);
+        this.closeIcon.position.set(modalWidth - 25, 25);
+
+        this.illustrationBox.clear()
+            .roundRect(20, graphicY, modalWidth - 40, graphicHeight, 8)
+            .fill({ color: 0x111111, alpha: 1 });
+
+        this._modalX = modalX;
+        this._modalY = modalY;
+        this._gifBoxX = modalX + 20;
+        this._gifBoxY = modalY + graphicY;
+        this._gifBoxW = modalWidth - 40;
+        this._gifBoxH = graphicHeight;
+        this._updateGifPosition();
+
+        const basicsY = graphicY + graphicHeight + 20;
+        this.basicsTitle.position.set(20, basicsY);
+        this.basicsText.style.wordWrapWidth = modalWidth - 40;
+        this.basicsText.position.set(20, basicsY + 30);
+
+        const itemsY = basicsY + 30 + this.basicsText.height + 20;
+        const listY = itemsY + 30;
+        const listHeight = Math.max(80, modalHeight - listY - 80);
+        this.itemsTitle.position.set(20, itemsY);
+
+        this.listArea?.destroy({ children: true });
+        this.listMask?.destroy();
+        this._buildScrollableList(GuideConfig.items, 20, listY, modalWidth - 40, listHeight);
+        this.bottomCloseBtn.position.set(modalWidth / 2, modalHeight - 40);
+        this.modal.addChild(this.bottomCloseBtn);
+    }
+
     onClose(callback) {
-        this.closeIcon.on("pointerdown", callback);
-        this.bottomCloseBtn.on("pointerdown", callback);
+        this.closeIcon.on("pointertap", callback);
+        this.bottomCloseBtn.on("pointertap", callback);
     }
 
     show() {

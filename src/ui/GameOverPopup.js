@@ -6,25 +6,28 @@ export class GameOverPopup {
     this.container = new Container();
     this._gameOverSfx = new Audio(gameOverSfx);
     this._gameOverSfx.volume = 0.8;
+    this.isSfxEnabled = true;
 
     // ===== Nền ngoài cùng: vẫn mờ (translucent) =====
-    const bg = new Graphics();
-    bg.rect(0, 0, screenWidth, screenHeight);
-    bg.fill({ color: 0x000000, alpha: 0.8 });
-    bg.eventMode = 'static'; // Chặn click xuyên qua nền
-    this.container.addChild(bg);
+    this.bg = new Graphics();
+    this.bg.rect(0, 0, screenWidth, screenHeight);
+    this.bg.fill({ color: 0x000000, alpha: 0.8 });
+    this.bg.eventMode = 'static'; // Chặn click xuyên qua nền
+    this.container.addChild(this.bg);
 
     // ===== Khung (panel) đặc bao quanh nội dung =====
-    const panelWidth = 360;
-    const panelHeight = 420;
+    this.panelWidth = 360;
+    this.panelHeight = 420;
+    const panelWidth = this.panelWidth;
+    const panelHeight = this.panelHeight;
     const panelX = screenWidth / 2 - panelWidth / 2;
     const panelY = screenHeight / 2 - panelHeight / 2;
 
-    const panel = new Graphics();
-    panel.roundRect(panelX, panelY, panelWidth, panelHeight, 24);
-    panel.fill({ color: 0x1a1a1a, alpha: 0.95 }); // đặc vừa phải, đồng bộ các popup khác
-    panel.stroke({ width: 3, color: 0xff4444, alpha: 0.8 }); // viền nhấn nhá theo tông "Game Over"
-    this.container.addChild(panel);
+    this.panel = new Graphics();
+    this.panel.roundRect(panelX, panelY, panelWidth, panelHeight, 24);
+    this.panel.fill({ color: 0x1a1a1a, alpha: 0.95 }); // đặc vừa phải, đồng bộ các popup khác
+    this.panel.stroke({ width: 3, color: 0xff4444, alpha: 0.8 }); // viền nhấn nhá theo tông "Game Over"
+    this.container.addChild(this.panel);
 
     // Tâm nội dung dựa theo panel thay vì toàn màn hình
     const centerX = screenWidth / 2;
@@ -38,10 +41,10 @@ export class GameOverPopup {
       fill: 0xff4444,
       align: 'center',
     });
-    const titleText = new Text({ text: 'GAME OVER', style: titleStyle });
-    titleText.anchor.set(0.5);
-    titleText.position.set(centerX, contentTop);
-    this.container.addChild(titleText);
+    this.titleText = new Text({ text: 'GAME OVER', style: titleStyle });
+    this.titleText.anchor.set(0.5);
+    this.titleText.position.set(centerX, contentTop);
+    this.container.addChild(this.titleText);
 
     // Score text
     const statStyle = new TextStyle({
@@ -123,22 +126,53 @@ export class GameOverPopup {
   }
 
   onRestart(callback) {
-    this.restartButton.on('pointerdown', callback);
+    this.restartButton.on('pointertap', callback);
   }
 
   onMenu(callback) {
-    this.menuButton.on('pointerdown', callback);
+    this.menuButton.on('pointertap', callback);
   }
 
   show(score, bestScore) {
     this.scoreText.text = `Score: ${Math.floor(score)}`;
     this.bestScoreText.text = `Best: ${Math.floor(bestScore)}`;
     this.container.visible = true;
-    this._gameOverSfx.currentTime = 0;
-    this._gameOverSfx.play().catch(() => {});
+    if (this.isSfxEnabled) {
+      this._gameOverSfx.currentTime = 0;
+      this._gameOverSfx.play().catch(() => {});
+    }
+  }
+
+  setSfxEnabled(enabled) {
+    this.isSfxEnabled = enabled;
+    if (!enabled) {
+      this._gameOverSfx.pause();
+      this._gameOverSfx.currentTime = 0;
+    }
   }
 
   hide() {
     this.container.visible = false;
+    this._gameOverSfx.pause();
+    this._gameOverSfx.currentTime = 0;
+  }
+
+  resize(screenWidth, screenHeight) {
+    const panelX = screenWidth / 2 - this.panelWidth / 2;
+    const panelY = screenHeight / 2 - this.panelHeight / 2;
+    const centerX = screenWidth / 2;
+    const contentTop = panelY + 60;
+
+    this.bg.clear().rect(0, 0, screenWidth, screenHeight).fill({ color: 0x000000, alpha: 0.8 });
+    this.panel.clear()
+      .roundRect(panelX, panelY, this.panelWidth, this.panelHeight, 24)
+      .fill({ color: 0x1a1a1a, alpha: 0.95 })
+      .stroke({ width: 3, color: 0xff4444, alpha: 0.8 });
+
+    this.titleText.position.set(centerX, contentTop);
+    this.scoreText.position.set(centerX, contentTop + 80);
+    this.bestScoreText.position.set(centerX, contentTop + 120);
+    this.restartButton.position.set(centerX, contentTop + 200);
+    this.menuButton.position.set(centerX, contentTop + 280);
   }
 }
