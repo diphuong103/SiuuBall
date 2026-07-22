@@ -108,37 +108,38 @@ export class OrbEffectSystem {
 
       case OrbEffectType.GRAVITY_DOWN: {
         const speed = this.game.difficultySystem.getCurrentSpeed();
+        const currentVx = this.game.ball?.body?.velocity?.x || 0;
 
         Matter.Body.setVelocity(this.game.ball.body, {
-          x: 0,
-          y: speed,
+          x: currentVx * 0.5,
+          y: speed * 0.5,
         });
         break;
       }
 
-      case OrbEffectType.GRAVITY_UP:
-        {
-          const speed = this.game.difficultySystem.getCurrentSpeed();
+      case OrbEffectType.GRAVITY_UP: {
+        const speed = this.game.difficultySystem.getCurrentSpeed();
+        const currentVx = this.game.ball?.body?.velocity?.x || 0;
 
-          Matter.Body.setVelocity(this.game.ball.body, {
-            x: 0,
-            y: -speed,
-          });
-          break;
-        }
-
-        if (effect.durationMs) {
-          this.effects.push({
-            effect,
-            appliedAt: now,
-            expiresAt: now + effect.durationMs,
-          });
-        }
-
-        this._syncGravity();
-        this.game.effectToast?.show(effect);
-        return effect;
+        Matter.Body.setVelocity(this.game.ball.body, {
+          x: currentVx * 0.5,
+          y: -speed * 0.5,
+        });
+        break;
+      }
     }
+
+    if (effect.durationMs) {
+      this.effects.push({
+        effect,
+        appliedAt: now,
+        expiresAt: now + effect.durationMs,
+      });
+    }
+
+    this._syncGravity();
+    this.game.effectToast?.show(effect);
+    return effect;
   }
 
   update(now = performance.now()) {

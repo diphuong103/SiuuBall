@@ -51,6 +51,7 @@ export const OrbEffects = Object.freeze({
     kind: 'debuff',
     color: 0x7c3aed,
     weight: 14,
+    durationMs: effects.gravityDurationMs,
   },
   [OrbEffectType.GRAVITY_UP]: {
     type: OrbEffectType.GRAVITY_UP,
@@ -58,6 +59,7 @@ export const OrbEffects = Object.freeze({
     kind: 'debuff',
     color: 0x38bdf8,
     weight: 14,
+    durationMs: effects.gravityDurationMs,
   },
   [OrbEffectType.MYSTERY]: {
     type: OrbEffectType.MYSTERY,

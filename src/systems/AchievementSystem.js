@@ -18,4 +18,5 @@ export class AchievementSystem {
     }
   }
   update(deltaSeconds) { this.add("safeTime", deltaSeconds); }
+  resetSafeTime() { this.progress.safeTime = 0; }
 }

@@ -1,6 +1,7 @@
 import Matter from "matter-js";
 import { Container, Graphics, Sprite } from "pixi.js";
 import { GameConfig } from "../config/GameConfig.js";
+import { Random } from "../utils/Random.js";
 
 const { Bodies } = Matter;
 
@@ -20,7 +21,13 @@ export class Ball {
       label: "main-ball",
     });
 
-    Matter.Body.setVelocity(this.body, { x: 0, y: startSpeed });
+    // Góc ngẫu nhiên trong khoảng 30°–150° (luôn đi xuống, không thẳng đứng)
+    const angleDeg = Random.float(30, 150);
+    const angleRad = (angleDeg * Math.PI) / 180;
+    Matter.Body.setVelocity(this.body, {
+      x: Math.cos(angleRad) * startSpeed,
+      y: Math.sin(angleRad) * startSpeed,
+    });
 
     this.container = new Container();
     this.container.position.set(x, y);

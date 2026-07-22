@@ -1,12 +1,10 @@
-import { Container, Graphics } from 'pixi.js';
+import { Container, Graphics, Text, TextStyle } from 'pixi.js';
 
 export class EffectBar {
     constructor(screenWidth) {
         this.container = new Container();
         // Centered horizontally, positioned right under HUD
         this.container.position.set(screenWidth / 2, 85);
-
-        this.cache = new Map();
 
         // Container to center all icons dynamically
         this.iconsLayer = new Container();
@@ -18,48 +16,79 @@ export class EffectBar {
 
         if (!activeEffects || activeEffects.length === 0) return;
 
-        const spacing = 40;
+        const spacing = 52;
         const totalWidth = (activeEffects.length - 1) * spacing;
         let startX = -totalWidth / 2;
 
         for (const effect of activeEffects) {
-            let icon = this.cache.get(effect.type);
-            if (!icon) {
-                icon = new Graphics();
-                this.cache.set(effect.type, icon);
-            }
-
-            icon.x = startX;
-            icon.y = 0;
+            const iconGroup = this._buildIcon(effect);
+            iconGroup.x = startX;
             startX += spacing;
-
-            this.iconsLayer.addChild(icon);
-            this.drawTimingIcon(icon, effect);
+            this.iconsLayer.addChild(iconGroup);
         }
     }
 
-    drawTimingIcon(gfx, effect) {
-        gfx.clear();
-
+    _buildIcon(effect) {
+        const group = new Container();
         const color = effect.color || 0x7c3aed;
+        const radius = 17;
 
-        // Base icon placeholder - designers can add Sprite here later
-        gfx.circle(0, 0, 16).fill(color);
-        gfx.circle(0, 0, 16).stroke({ color: 0xffffff, width: 2, alpha: 0.8 });
+        // Background circle
+        const bg = new Graphics();
+        bg.circle(0, 0, radius).fill({ color: 0x000000, alpha: 0.45 });
+        bg.circle(0, 0, radius).stroke({ color, width: 2.5, alpha: 0.9 });
+        group.addChild(bg);
 
-        // Timing overlay layer (darkens like a cooldown pie chart)
+        // Cooldown arc (pie-chart style)
         if (effect.durationMs > 0 && effect.remainingTimeMs >= 0) {
             const progress = 1 - (effect.remainingTimeMs / effect.durationMs);
             if (progress > 0 && progress < 1) {
+                const arc = new Graphics();
                 const startAngle = -Math.PI / 2;
-                const currentAngle = startAngle + (Math.PI * 2) * progress;
-
-                gfx.moveTo(0, 0);
-                gfx.arc(0, 0, 16, startAngle, currentAngle);
-                gfx.lineTo(0, 0); // close path back to center
-                gfx.fill({ color: 0x000000, alpha: 0.6 });
+                const endAngle = startAngle + Math.PI * 2 * progress;
+                arc.moveTo(0, 0);
+                arc.arc(0, 0, radius, startAngle, endAngle);
+                arc.lineTo(0, 0);
+                arc.fill({ color: 0x000000, alpha: 0.55 });
+                group.addChild(arc);
             }
         }
+
+        // Remaining time text (center of circle)
+        if (effect.durationMs > 0 && effect.remainingTimeMs > 0) {
+            const secLeft = Math.ceil(effect.remainingTimeMs / 1000);
+            const timeText = new Text({
+                text: `${secLeft}`,
+                style: new TextStyle({
+                    fontFamily: 'Arial',
+                    fontSize: 12,
+                    fontWeight: 'bold',
+                    fill: 0xffffff,
+                }),
+            });
+            timeText.anchor.set(0.5);
+            group.addChild(timeText);
+        }
+
+        // Effect name label below circle
+        const label = new Text({
+            text: effect.name || '',
+            style: new TextStyle({
+                fontFamily: 'Arial',
+                fontSize: 10,
+                fontWeight: 'bold',
+                fill: color,
+                dropShadow: true,
+                dropShadowDistance: 1,
+                dropShadowBlur: 2,
+                dropShadowAlpha: 0.8,
+            }),
+        });
+        label.anchor.set(0.5, 0);
+        label.y = radius + 3;
+        group.addChild(label);
+
+        return group;
     }
 
     show() {
