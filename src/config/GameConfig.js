@@ -11,6 +11,9 @@ export const GameConfig = {
 
   physics: {
     gravity: 0.0,   //   Lực hấp dẫn trong trò chơi (0.0 có nghĩa là không có trọng lực)
+    fixedStepMs: 1000 / 60,
+    maxFrameDeltaMs: 50,
+    maxStepsPerFrame: 3,
   },
 
   ball: {

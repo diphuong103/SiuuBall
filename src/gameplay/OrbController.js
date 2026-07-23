@@ -70,7 +70,13 @@ export class OrbController {
       if (this.scoreOrbs.length < GameConfig.scoreOrb.maxActive) this.spawnScoreOrb();
     }
     const now = performance.now();
-    for (const orb of [...this.orbs, ...this.scoreOrbs]) {
+    this._updateOrbs(this.orbs, now);
+    this._updateOrbs(this.scoreOrbs, now);
+  }
+
+  _updateOrbs(orbs, now) {
+    for (let index = orbs.length - 1; index >= 0; index -= 1) {
+      const orb = orbs[index];
       if (now >= orb.expiresAt) this.remove(orb);
       else orb.syncGraphics(now);
     }
@@ -98,7 +104,11 @@ export class OrbController {
   }
 
   clear() {
-    for (const orb of [...this.orbs]) this.remove(orb);
-    for (const orb of [...this.scoreOrbs]) this.remove(orb);
+    for (let index = this.orbs.length - 1; index >= 0; index -= 1) {
+      this.remove(this.orbs[index]);
+    }
+    for (let index = this.scoreOrbs.length - 1; index >= 0; index -= 1) {
+      this.remove(this.scoreOrbs[index]);
+    }
   }
 }

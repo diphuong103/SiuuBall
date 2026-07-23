@@ -54,12 +54,28 @@ export class GameplayHUD {
         this.bestVal.anchor.set(1, 0);
         this.bestVal.position.set(screenWidth - marginX, marginY + 25);
         this.container.addChild(this.bestVal);
+
+        this.lastScoreText = '0';
+        this.lastBestScoreText = '0';
+        this.lastTimeText = '0s';
     }
 
     update({ score, bestScore, elapsedTime }) {
-        this.scoreVal.text = `${Math.floor(score)}`;
-        this.bestVal.text = `${Math.floor(bestScore)}`;
-        this.timeVal.text = `${Math.floor(elapsedTime)}s`;
+        const scoreText = `${Math.floor(score)}`;
+        const bestScoreText = `${Math.floor(bestScore)}`;
+        const timeText = `${Math.floor(elapsedTime)}s`;
+        if (scoreText !== this.lastScoreText) {
+            this.lastScoreText = scoreText;
+            this.scoreVal.text = scoreText;
+        }
+        if (bestScoreText !== this.lastBestScoreText) {
+            this.lastBestScoreText = bestScoreText;
+            this.bestVal.text = bestScoreText;
+        }
+        if (timeText !== this.lastTimeText) {
+            this.lastTimeText = timeText;
+            this.timeVal.text = timeText;
+        }
     }
 
     resize(screenWidth) {

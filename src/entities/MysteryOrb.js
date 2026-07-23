@@ -3,19 +3,19 @@ import { Container, Sprite, Assets, Graphics, Text, TextStyle } from 'pixi.js';
 import { GameConfig } from '../config/GameConfig.js';
 import { OrbEffectType } from '../gameplay/OrbEffectType.js';
 
-import doubleScoreImg from '../assets/textures/orb/double_score_orb.webp';
-import slowImg from '../assets/textures/orb/Slow_Motion_Orb.webp';
-import shieldImg from '../assets/textures/orb/Shield_Orb.webp';
-import speedUpImg from '../assets/textures/orb/Speed_Up_Orb.webp';
-import projectileImg from '../assets/textures/orb/Projectile_Orb.webp';
-import gravityDownImg from '../assets/textures/orb/Gravity_Down_Orb.webp';
-import gravityUpImg from '../assets/textures/orb/Gravity_Up_Orb.webp';
-import mysteryImg from '../assets/textures/orb/Mystery_Orb.webp';
-import score10Img from '../assets/textures/orb/10.webp';
-import score20Img from '../assets/textures/orb/20.webp';
-import score50Img from '../assets/textures/orb/50.webp';
-import score100Img from '../assets/textures/orb/100.webp';
-import score150Img from '../assets/textures/orb/150.webp';
+import doubleScoreImg from '../assets/textures/orb/double_score_orb.mobile.webp';
+import slowImg from '../assets/textures/orb/Slow_Motion_Orb.mobile.webp';
+import shieldImg from '../assets/textures/orb/Shield_Orb.mobile.webp';
+import speedUpImg from '../assets/textures/orb/Speed_Up_Orb.mobile.webp';
+import projectileImg from '../assets/textures/orb/Projectile_Orb.mobile.webp';
+import gravityDownImg from '../assets/textures/orb/Gravity_Down_Orb.mobile.webp';
+import gravityUpImg from '../assets/textures/orb/Gravity_Up_Orb.mobile.webp';
+import mysteryImg from '../assets/textures/orb/Mystery_Orb.mobile.webp';
+import score10Img from '../assets/textures/orb/10.mobile.webp';
+import score20Img from '../assets/textures/orb/20.mobile.webp';
+import score50Img from '../assets/textures/orb/50.mobile.webp';
+import score100Img from '../assets/textures/orb/100.mobile.webp';
+import score150Img from '../assets/textures/orb/150.mobile.webp';
 
 const orbTextures = {
     [OrbEffectType.DOUBLE_SCORE]: doubleScoreImg,

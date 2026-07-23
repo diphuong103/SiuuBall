@@ -1,5 +1,6 @@
 import { Application } from "pixi.js";
 import { PhysicsWorld } from "./PhysicsWorld.js";
+import { FixedStepClock } from "./FixedStepClock.js";
 import { createDangerZone } from "../entities/DangerZone.js";
 import { Ball } from "../entities/Ball.js";
 import { DrawLine } from "../entities/DrawLine.js";
@@ -60,6 +61,7 @@ export class Game {
     this.currentLine = null;
     this.isShielded = false;
     this._speedDirty = false;
+    this.physicsClock = new FixedStepClock(GameConfig.physics);
 
     // Audio
     this._bgMusic = new Audio(bg_gameMusic);
@@ -514,6 +516,7 @@ export class Game {
     this.gameplayLayer.visible = true;
     this.hud.show();
     this._bgMusic.play().catch(() => {});
+    this.eventToast.show("DRAW A LINE TO DEFLECT THE BALL", "", 0x4dd0ff, 2000);
     await this.backgroundManager.setBackground(
       bgGameplay,
     );
@@ -557,6 +560,7 @@ export class Game {
     this.effectBar?.clear();
     this.setShield(false);
     this.setGravityScale(GameConfig.physics.gravity);
+    this.physicsClock.reset();
 
     // Reset điểm và độ khó
     this.scoreSystem.reset();
@@ -767,14 +771,18 @@ export class Game {
   // Cập nhật trạng
   update() {
     if (this.gameState !== GameState.PLAYING) return;
-    const deltaSeconds = this.app.ticker.deltaMS / 1000;
+    const { deltaMs, steps } = this.physicsClock.advance(this.app.ticker.deltaMS);
+    const deltaSeconds = deltaMs / 1000;
 
     this.difficultySystem.update(deltaSeconds);
     this.updateGameplayEvents(deltaSeconds);
-    this.physics.update(this.app.ticker.deltaMS);
-    if (this._speedDirty) {
-      this._speedDirty = false;
-      this.bounceController.maintainSpeed();
+
+    for (let step = 0; step < steps && this.gameState === GameState.PLAYING; step += 1) {
+      this.physics.update(this.physicsClock.fixedStepMs);
+      if (this._speedDirty) {
+        this._speedDirty = false;
+        this.bounceController.maintainSpeed();
+      }
     }
     this.ball.syncGraphics();
     this.orbController.update(deltaSeconds);

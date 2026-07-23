@@ -91,7 +91,8 @@ export class ProjectileController {
       }
     }
     const now = performance.now();
-    for (const projectile of [...this.projectiles]) {
+    for (let index = this.projectiles.length - 1; index >= 0; index -= 1) {
+      const projectile = this.projectiles[index];
       if (now >= projectile.expiresAt || this.isOutside(projectile))
         this.remove(projectile);
       else projectile.syncGraphics();
@@ -133,6 +134,8 @@ export class ProjectileController {
   }
 
   clear() {
-    for (const projectile of [...this.projectiles]) this.remove(projectile);
+    for (let index = this.projectiles.length - 1; index >= 0; index -= 1) {
+      this.remove(this.projectiles[index]);
+    }
   }
 }

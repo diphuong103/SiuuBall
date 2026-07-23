@@ -1,14 +1,14 @@
 import { Container, Graphics, Text, TextStyle, Sprite, Assets } from "pixi.js";
 import { GuideConfig } from "../config/GuideConfig.js";
 
-import doubleScoreImg from '../assets/textures/orb/double_score_orb.webp';
-import slowImg from '../assets/textures/orb/Slow_Motion_Orb.webp';
-import shieldImg from '../assets/textures/orb/Shield_Orb.webp';
-import speedUpImg from '../assets/textures/orb/Speed_Up_Orb.webp';
-import projectileImg from '../assets/textures/orb/Projectile_Orb.webp';
-import gravityDownImg from '../assets/textures/orb/Gravity_Down_Orb.webp';
-import gravityUpImg from '../assets/textures/orb/Gravity_Up_Orb.webp';
-import mysteryImg from '../assets/textures/orb/Mystery_Orb.webp';
+import doubleScoreImg from '../assets/textures/orb/double_score_orb.mobile.webp';
+import slowImg from '../assets/textures/orb/Slow_Motion_Orb.mobile.webp';
+import shieldImg from '../assets/textures/orb/Shield_Orb.mobile.webp';
+import speedUpImg from '../assets/textures/orb/Speed_Up_Orb.mobile.webp';
+import projectileImg from '../assets/textures/orb/Projectile_Orb.mobile.webp';
+import gravityDownImg from '../assets/textures/orb/Gravity_Down_Orb.mobile.webp';
+import gravityUpImg from '../assets/textures/orb/Gravity_Up_Orb.mobile.webp';
+import mysteryImg from '../assets/textures/orb/Mystery_Orb.mobile.webp';
 
 const iconMap = {
     "Mystery Orb": mysteryImg,
