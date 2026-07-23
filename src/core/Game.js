@@ -1,5 +1,4 @@
 import { Application } from "pixi.js";
-import Matter from "matter-js";
 import { PhysicsWorld } from "./PhysicsWorld.js";
 import { createDangerZone } from "../entities/DangerZone.js";
 import { Ball } from "../entities/Ball.js";
@@ -13,7 +12,6 @@ import { MainMenu } from "../ui/MainMenu.js";
 import { GameOverPopup } from "../ui/GameOverPopup.js";
 import { SettingsPopup } from "../ui/SettingsPopup.js";
 import { SoundSettingsPopup } from "../ui/SoundSettingsPopup.js";
-import { GuidePopup } from "../ui/GuidePopup.js";
 import { CollisionManager } from "../gameplay/CollisionManager.js";
 import { BounceController } from "../gameplay/BounceController.js";
 import { GameConfig } from "../config/GameConfig.js";
@@ -28,9 +26,7 @@ import { GameplayEventToast } from "../ui/GameplayEventToast.js";
 import { BackgroundManager } from "../systems/BackgroundManager.js";
 import { AchievementSystem } from "../systems/AchievementSystem.js";
 import { SaveSystem } from "../systems/SaveSystem.js";
-import { ParticleSystem } from "../effects/ParticleSystem.js";
-import { TrailEffect } from "../effects/TrailEffect.js";
-import { CameraShake } from "../effects/CameraShake.js";
+
 import bg_gameMusic from "../assets/audio/nhac-xo-so.mp3";
 import sfxBounce from "../assets/audio/sfx/sfx_ball_bounce.mp3";
 import sfxClick from "../assets/audio/sfx/click.mp3";
@@ -42,7 +38,8 @@ import sfxAchievement1 from "../assets/audio/sfx/achievement_01.mp3";
 import sfxAchievement2 from "../assets/audio/sfx/achievement_02.mp3";
 import sfxAchievement3 from "../assets/audio/sfx/achievement_03.mp3";
 import sfxAchievement4 from "../assets/audio/sfx/achievement_04.mp3";
-import sfxScoreOrb from "../assets/audio/sfx/sfx_ball_click.mp3";
+import bgMainMenu from "../assets/textures/background/bg_mainmenu.webp";
+import bgGameplay from "../assets/textures/background/bg_gameplay.webp";
 
 const ARENA_THEMES = [
   { name: "NEON CITY", tint: 0xc4b5fd, border: 0xa855f7 },
@@ -52,9 +49,9 @@ const ARENA_THEMES = [
 ];
 
 const DIFFICULTY_SETTINGS = {
-  EASY: { speedIncreaseAmount: 0.05, maxSpeed: 10 },
-  NORMAL: { speedIncreaseAmount: 0.1, maxSpeed: 15 },
-  HARD: { speedIncreaseAmount: 0.2, maxSpeed: 20 },
+  EASY: { speedIncreaseAmount: 0.2, maxSpeed: 12 },
+  NORMAL: { speedIncreaseAmount: 0.4, maxSpeed: 18 },
+  HARD: { speedIncreaseAmount: 0.6, maxSpeed: 25 },
 };
 
 export class Game {
@@ -62,7 +59,7 @@ export class Game {
     this.gameState = GameState.MENU;
     this.currentLine = null;
     this.isShielded = false;
-    this._speedDirty = false; // Flag: cần correct tốc độ sau physics step
+    this._speedDirty = false;
 
     // Audio
     this._bgMusic = new Audio(bg_gameMusic);
@@ -82,7 +79,6 @@ export class Game {
       achievement2: new Audio(sfxAchievement2),
       achievement3: new Audio(sfxAchievement3),
       achievement4: new Audio(sfxAchievement4),
-      scoreOrb: new Audio(sfxScoreOrb),
     };
 
     this._sfx.bounce.volume = 1.0;
@@ -94,7 +90,6 @@ export class Game {
     this._sfx.achievement2.volume = 0.8;
     this._sfx.achievement3.volume = 0.8;
     this._sfx.achievement4.volume = 0.8;
-    this._sfx.scoreOrb.volume = 0.9;
     this._waveSfx = new Audio(sfxSurvivalWave);
     this._waveSfx.loop = true;
     this._waveSfx.volume = 0.65;
@@ -119,7 +114,8 @@ export class Game {
     }
 
     this.gameContainer = gameContainer;
-    const { width: displayWidth, height: displayHeight } = this.getViewportSize();
+    const { width: displayWidth, height: displayHeight } =
+      this.getViewportSize();
     const { width, height } = GameConfig.viewport;
     this.displaySize = { width: displayWidth, height: displayHeight };
 
@@ -140,6 +136,7 @@ export class Game {
     // 1.5. Layer riêng cho gameplay (danger zone, ball, line)
     // Luôn nằm DƯỚI mọi UI vì chỉ add vào stage đúng 1 lần, ngay từ đầu.
     this.gameplayLayer = new Container();
+    this.gameplayLayer.visible = false;
     this.app.stage.addChild(this.gameplayLayer);
 
     this.backgroundManager = new BackgroundManager(this.app);
@@ -162,21 +159,11 @@ export class Game {
     this.dangerZoneGraphics = wallGraphics;
 
     await this.backgroundManager.setBackground(
-      "/src/assets/textures/background/bg_mainmenu.png",
+      bgMainMenu,
     );
     this.ball = new Ball(this.app.screen.width / 2, this.app.screen.height / 2);
     this.physics.add(this.ball.body);
     this.gameplayLayer.addChild(this.ball.graphics);
-
-    // Visual effects
-    this.particleSystem = new ParticleSystem(this.gameplayLayer);
-    this.trailEffect = new TrailEffect(
-      this.gameplayLayer,
-      14,
-      0xffd36b,
-      GameConfig.ball.radius,
-    );
-    this.cameraShake = new CameraShake(this.gameplayLayer);
 
     // 5. Gameplay Controllers
     this.collisionManager = new CollisionManager(this.physics.engine);
@@ -194,7 +181,13 @@ export class Game {
     this.orbController = new OrbController(
       this.spawnManager,
       this.effectSystem,
-      () => this.eventToast?.show("ORB HIẾM XUẤT HIỆN!", "Nhặt trước khi hết giờ", 0xd97706, 1800),
+      () =>
+        this.eventToast?.show(
+          "RARE ORB APPEARS!",
+          "COLLECT BEFORE TIME RUNS OUT!",
+          0xd97706,
+          1800,
+        ),
     );
     this.projectileController = new ProjectileController(
       this.spawnManager,
@@ -207,12 +200,20 @@ export class Game {
         this.scoreSystem.addBouncePoints();
         this.achievementSystem.add("bounces");
         this.playSound("bounce");
-        // QUAN TRỌNG: không gọi maintainSpeed() ở đây vì đang trong giữa physics step.
-        // Dùng flag để defer ra sau khi physics.update() hoàn tất.
         this._speedDirty = true;
-        // Particle nhỏ khi nảy
+
         const ballPos = this.ball.body.position;
-        this.particleSystem?.burst(ballPos.x, ballPos.y, 0xffd36b, 6, { speed: 160, radius: 3, life: 0.35 });
+        this.particleSystem?.burst(
+          ballPos.x,
+          ballPos.y,
+          this.selectedLineColor,
+          8,
+          {
+            speed: 180,
+            radius: 4,
+            life: 0.4,
+          },
+        );
       },
       onBallHitDangerZone: () => {
         if (this.gameState !== GameState.PLAYING) return;
@@ -228,13 +229,7 @@ export class Game {
         );
         this.playSound("powerup");
         const effect = this.orbController.handleCollision(this.ball, orb);
-        if (effect) {
-          this.achievementSystem.add("orbs");
-          // Particle burst màu của hiệu ứng
-          const orbBody = orb?.body?.position || this.ball.body.position;
-          const burstColor = effect.color || 0xa855f7;
-          this.particleSystem?.burst(orbBody.x, orbBody.y, burstColor, 18, { speed: 310, radius: 5, life: 0.6 });
-        }
+        if (effect) this.achievementSystem.add("orbs");
       },
       onBallHitScoreOrb: (pair) => {
         if (this.gameState !== GameState.PLAYING) return;
@@ -245,11 +240,8 @@ export class Game {
         );
         if (!orb) return;
         this.scoreSystem.addPoints(orb.scoreValue);
-        // Particle vàng khi ăn điểm
-        const sp = orb.body.position;
-        this.particleSystem?.burst(sp.x, sp.y, 0xffd60a, 10, { speed: 200, radius: 4, life: 0.45 });
         this.orbController.remove(orb);
-        this.playSound("scoreOrb");
+        this.playSound("powerup");
         this.effectToast.show({ name: `+${orb.scoreValue}`, color: 0xfbbf24 });
       },
       onBallHitProjectile: (pair) => {
@@ -263,19 +255,12 @@ export class Game {
         this.playSound("bullets");
         if (!projectile) return;
 
-        // Particle đỏ + rung khi trúng đạn
-        const hp = this.ball.body.position;
-        this.particleSystem?.burst(hp.x, hp.y, 0xff4d6d, 22, { speed: 350, radius: 5, life: 0.65 });
-        this.cameraShake?.shake(0.3, 10);
-
         this.projectileController.handleCollision(projectile);
 
         if (this.consumeShieldIfActive()) {
           return;
         }
 
-        // Reset "NO DAMAGE" achievement vì bóng bị trúng đạn thật
-        this.achievementSystem.resetSafeTime();
         this.gameOver();
       },
     });
@@ -293,9 +278,16 @@ export class Game {
     this.hud = new GameplayHUD(this.app.screen.width);
     this.effectToast = new EffectToast(this.app.screen.width);
     this.effectBar = new EffectBar(this.app.screen.width);
-    this.eventToast = new GameplayEventToast(this.app.screen.width, this.app.screen.height);
+    this.eventToast = new GameplayEventToast(
+      this.app.screen.width,
+      this.app.screen.height,
+    );
     this.achievementSystem = new AchievementSystem((achievement) => {
-      this.eventToast.show(achievement.title, achievement.subtitle, achievement.color);
+      this.eventToast.show(
+        achievement.title,
+        achievement.subtitle,
+        achievement.color,
+      );
       this.playSound(achievement.sfx);
     });
     this.mainMenu = new MainMenu(this.app.screen.width, this.app.screen.height);
@@ -306,11 +298,6 @@ export class Game {
     this.SoundSettingsPopup = new SoundSettingsPopup(
       this.app.screen.width,
       this.app.screen.height,
-    );
-    this.guidePopup = new GuidePopup(
-      this.app.screen.width,
-      this.app.screen.height,
-      this.app.canvas,
     );
     this.gameOverPopup = new GameOverPopup(
       this.app.screen.width,
@@ -328,7 +315,6 @@ export class Game {
     this.app.stage.addChild(this.SettingsPopup.container);
     this.app.stage.addChild(this.SoundSettingsPopup.container);
     this.app.stage.addChild(this.gameOverPopup.container);
-    this.app.stage.addChild(this.guidePopup.container);
 
     // --- MainMenu events ---
     this.mainMenu.onStart(() => this.runTransition(() => this.startGame()));
@@ -341,8 +327,6 @@ export class Game {
     this.mainMenu.onSettings(() => this.showSettings());
     this.mainMenu.onHelp(() => this.showGuidePopup());
 
-    this.guidePopup.onClose(() => this.hideGuidePopup());
-
     // Chọn bóng qua slideshow trái/phải
     this.mainMenu.onBallChange((ballOption) => {
       this.selectedBall = ballOption;
@@ -353,7 +337,9 @@ export class Game {
     // Chọn màu vẽ
     this.mainMenu.onColorSelect((color) => {
       this.selectedLineColor = color;
-      SaveSystem.saveSettings({ lineColorIndex: this.mainMenu.selectedColorIndex });
+      SaveSystem.saveSettings({
+        lineColorIndex: this.mainMenu.selectedColorIndex,
+      });
     });
 
     // Lấy lựa chọn mặc định ngay khi khởi tạo (bóng #0, màu #0)
@@ -413,7 +399,8 @@ export class Game {
 
   getViewportSize() {
     const containerWidth = this.gameContainer?.clientWidth || window.innerWidth;
-    const containerHeight = this.gameContainer?.clientHeight || window.innerHeight;
+    const containerHeight =
+      this.gameContainer?.clientHeight || window.innerHeight;
     const aspectRatio = GameConfig.viewport.aspectRatio;
 
     let width = containerWidth;
@@ -528,7 +515,7 @@ export class Game {
     this.hud.show();
     this._bgMusic.play().catch(() => {});
     await this.backgroundManager.setBackground(
-      "/src/assets/textures/background/bg_gameplay.png",
+      bgGameplay,
     );
     this.applyArenaTheme(this.arenaIndex, false);
   }
@@ -568,9 +555,6 @@ export class Game {
 
     this.effectSystem?.clear();
     this.effectBar?.clear();
-    this.trailEffect?.clear();
-    this.cameraShake?.stop();
-    this._speedDirty = false;
     this.setShield(false);
     this.setGravityScale(GameConfig.physics.gravity);
 
@@ -604,7 +588,7 @@ export class Game {
     this.gameplayLayer.visible = false;
     this.hud.hide();
     await this.backgroundManager.setBackground(
-      "/src/assets/textures/background/bg_mainmenu.png",
+      bgMainMenu,
     );
   }
 
@@ -613,12 +597,6 @@ export class Game {
 
     const sound = this._sfx[name];
     if (sound) {
-      if (!sound.paused && sound.currentTime > 0) {
-        const clone = sound.cloneNode();
-        clone.volume = sound.volume;
-        clone.play().catch(() => {});
-        return;
-      }
       sound.currentTime = 0;
       sound.play().catch(() => {});
     }
@@ -667,9 +645,11 @@ export class Game {
   applyArenaTheme(index, announce = true) {
     const theme = ARENA_THEMES[index % ARENA_THEMES.length];
     this.arenaIndex = index % ARENA_THEMES.length;
-    if (this.backgroundManager?.sprite) this.backgroundManager.sprite.tint = theme.tint;
+    if (this.backgroundManager?.sprite)
+      this.backgroundManager.sprite.tint = theme.tint;
     if (this.dangerZoneGraphics) this.dangerZoneGraphics.tint = theme.border;
-    if (announce) this.eventToast.show(theme.name, "Arena theme changed", theme.border);
+    if (announce)
+      this.eventToast.show(theme.name, "Arena theme changed", theme.border);
   }
 
   startSurvivalWave() {
@@ -682,9 +662,14 @@ export class Game {
       this._waveSfx.currentTime = 0;
       this._waveSfx.play().catch(() => {});
     }
-    // Rung nhẹ khi wave bắt đầu
-    this.cameraShake?.shake(0.4, 6);
-    this.eventToast.show("SURVIVAL WAVE", "7 seconds • x2 score", 0xef4444, 900);
+    // Survival là cảnh báo quan trọng: hiển thị ngay, không chờ toast trước đó.
+    this.eventToast.clear();
+    this.eventToast.show(
+      "SURVIVAL MODE BEGINS!",
+      `Đạn x${cfg.waveProjectileMultiplier} • Điểm x${cfg.waveScoreMultiplier} trong ${cfg.waveDuration}s`,
+      0xef4444,
+      2000,
+    );
   }
 
   endSurvivalWave() {
@@ -705,11 +690,19 @@ export class Game {
     const cfg = GameConfig.gameplayEvents;
     this.gameplayEventElapsed += deltaSeconds;
     this.achievementSystem.update(deltaSeconds);
-    const themeIndex = Math.floor(this.gameplayEventElapsed / cfg.arenaChangeInterval) % ARENA_THEMES.length;
+    const themeIndex =
+      Math.floor(this.gameplayEventElapsed / cfg.arenaChangeInterval) %
+      ARENA_THEMES.length;
     if (themeIndex !== this.arenaIndex) this.applyArenaTheme(themeIndex);
-    if (this.isSurvivalWaveActive && this.gameplayEventElapsed >= this.waveEndsAt) {
+    if (
+      this.isSurvivalWaveActive &&
+      this.gameplayEventElapsed >= this.waveEndsAt
+    ) {
       this.endSurvivalWave();
-    } else if (!this.isSurvivalWaveActive && this.gameplayEventElapsed >= this.nextWaveAt) {
+    } else if (
+      !this.isSurvivalWaveActive &&
+      this.gameplayEventElapsed >= this.nextWaveAt
+    ) {
       this.nextWaveAt += cfg.waveInterval;
       this.startSurvivalWave();
     }
@@ -731,7 +724,17 @@ export class Game {
     this.SettingsPopup.hide();
   }
 
-  showGuidePopup() {
+  async showGuidePopup() {
+    if (!this.guidePopup) {
+      const { GuidePopup } = await import("../ui/GuidePopup.js");
+      this.guidePopup = new GuidePopup(
+        this.app.screen.width,
+        this.app.screen.height,
+        this.app.canvas,
+      );
+      this.guidePopup.onClose(() => this.hideGuidePopup());
+      this.app.stage.addChild(this.guidePopup.container);
+    }
     this.guidePopup.show();
   }
 
@@ -741,7 +744,8 @@ export class Game {
 
   consumeShieldIfActive() {
     if (!this.isShielded) return false;
-    this.setShield(false);
+    if (!this.effectSystem?.consumeShield?.()) this.setShield(false);
+    this.effectToast?.show({ name: "SHIELD BLOCKED!", color: 0x4ade80 });
     return true;
   }
 
@@ -753,8 +757,7 @@ export class Game {
     try {
       await action();
       return true;
-    } catch (error) {
-      console.error("Game transition failed:", error);
+    } catch {
       return false;
     } finally {
       this.isTransitioning = false;
@@ -769,16 +772,10 @@ export class Game {
     this.difficultySystem.update(deltaSeconds);
     this.updateGameplayEvents(deltaSeconds);
     this.physics.update(this.app.ticker.deltaMS);
-
-    // Sau khi physics step hoàn tất: correct tốc độ nếu có bounce xảy ra frame này
     if (this._speedDirty) {
       this._speedDirty = false;
       this.bounceController.maintainSpeed();
     }
-
-    // Hard clamp: đảm bảo bóng không bao giờ vượt tốc độ tối đa (dù bất kỳ lý do gì)
-    this._clampBallSpeed();
-
     this.ball.syncGraphics();
     this.orbController.update(deltaSeconds);
     this.projectileController.update(deltaSeconds);
@@ -788,12 +785,6 @@ export class Game {
     this.effectBar.update(
       this.effectSystem.getActiveEffects(performance.now()),
     );
-
-    // Visual effects update
-    const bp = this.ball.body.position;
-    this.trailEffect?.update(bp.x, bp.y);
-    this.particleSystem?.update(deltaSeconds);
-    this.cameraShake?.update(deltaSeconds);
 
     if (this.currentLine && this.currentLine.isExpired(performance.now())) {
       this.removeCurrentLine();
@@ -805,24 +796,6 @@ export class Game {
       bestScore: this.scoreSystem.getBestScore(),
       elapsedTime: this.difficultySystem.getElapsedTime(),
     });
-  }
-
-  /**
-   * Đảm bảo bóng không bao giờ vượt maxSpeed trong config.
-   * Bảo vệ khỏi: restitution physics glitch, gravity accumulation, bất kỳ bug tốc độ nào.
-   */
-  _clampBallSpeed() {
-    if (!this.ball?.body) return;
-    const v = this.ball.body.velocity;
-    const speed = Math.hypot(v.x, v.y);
-    // Dùng currentSpeed (đã tính modifier SLOW/SPEED_UP) thay vì maxSpeed tuyệt đối
-    const targetSpeed = this.difficultySystem.getCurrentSpeed();
-    const hardCap = GameConfig.difficulty.maxSpeed * 1.1; // tuyệt đối không vượt
-    const cap = Math.min(targetSpeed * 1.08, hardCap); // 8% buffer trên target
-    if (speed > cap) {
-      const scale = targetSpeed / speed; // clamp về đúng target speed
-      Matter.Body.setVelocity(this.ball.body, { x: v.x * scale, y: v.y * scale });
-    }
   }
 
   destroy() {

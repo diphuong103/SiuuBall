@@ -15,7 +15,7 @@ const DEFAULT_LINE_COLORS = [
   0xffffff, // trắng
 ];
 
-// Placeholder cho bóng (thay bằng texture thật khi bạn có design)
+// Default vector ball skins.
 const DEFAULT_BALL_OPTIONS = [
   { name: "Classic", color: 0xffffff, texture: null },
   { name: "Fire", color: 0xff6b35, texture: null },
@@ -110,7 +110,7 @@ export class MainMenu {
 
     // Label
     const label = new Text({
-      text: "CHỌN BÓNG",
+      text: "SELECT BALL",
       style: new TextStyle({
         fontFamily: "Arial",
         fontSize: 14,
@@ -240,7 +240,7 @@ export class MainMenu {
       sprite.scale.set(scale);
       this.ballGraphic.addChild(sprite);
     } else {
-      // Placeholder: hình tròn màu + viền sáng nhẹ
+      // Default vector ball: color fill and a subtle highlight.
       const ball = new Graphics();
       ball.circle(0, 0, 36);
       ball.fill(option.color);
@@ -308,7 +308,7 @@ export class MainMenu {
     this.container.addChild(this.colorPickerContainer);
 
     const label = new Text({
-      text: "MÀU VẼ",
+      text: "LINE COLOR",
       style: new TextStyle({
         fontFamily: "Arial",
         fontSize: 14,

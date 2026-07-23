@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --test",
+    "verify": "npm run test && npm run build -- --emptyOutDir"
   },
   "keywords": [],
   "author": "",

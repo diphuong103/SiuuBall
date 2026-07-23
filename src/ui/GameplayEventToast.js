@@ -60,11 +60,6 @@ export class GameplayEventToast {
     this.container.visible = true;
     this.container.alpha = 1;
     this.container.scale.set(0.82);
-    const width = Math.max(
-      240,
-      this.title.width + 56,
-      this.subtitle.width + 48,
-    );
     this.background.clear();
     this.title.style.fill = color;
     this.subtitle.style.fill = 0xffffff;

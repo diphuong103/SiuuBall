@@ -146,7 +146,7 @@ export class SettingsPopup extends BaseUI {
       this._setDifficulty("HARD");
     });
 
-    // Reset best score -> hiện toast đẹp thay vì console.log
+    // Reset best score and show an in-game confirmation.
     this.btnReset.onClick(() => {
       this._playClickSfx();
       this._handleResetScore();
@@ -181,7 +181,7 @@ export class SettingsPopup extends BaseUI {
 
   _handleResetScore() {
     if (this._onResetScoreCb) this._onResetScoreCb();
-    this.showToast("Đã reset điểm cao!");
+    this.showToast("Best score reset!");
   }
 
   // =========================================================

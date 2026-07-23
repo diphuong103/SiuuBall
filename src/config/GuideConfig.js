@@ -34,7 +34,7 @@ export const GuideConfig = {
         {
             name: "Shield",
             type: "Buff",
-            description: "Chặn một viên đạn trong 6 giây.",
+            description: "Chặn 1 viên đạn. Khiên tự hết sau 6 giây nếu chưa dùng.",
             duration: "6s",
             color: 0x4ade80
         },
@@ -46,24 +46,24 @@ export const GuideConfig = {
             color: 0xf97316
         },
         {
-            name: "Projectile",
+            name: "Bullet Attack",
             type: "Debuff",
             description: "Tạo 2 viên đạn từ mép sân bay về phía bóng.",
             duration: "",
             color: 0xff4d6d
         },
         {
-            name: "Gravity Down",
+            name: "Launch Down",
             type: "Debuff",
-            description: "Trọng lực kéo bóng xuống mạnh hơn.",
-            duration: "5s",
+            description: "Đẩy bóng bay thẳng xuống dưới. Vẽ hoặc chặn đường đi ở phía dưới.",
+            duration: "",
             color: 0x7c3aed
         },
         {
-            name: "Gravity Up",
+            name: "Launch Up",
             type: "Debuff",
-            description: "Trọng lực kéo bóng lên trong 5 giây.",
-            duration: "5s",
+            description: "Đẩy bóng bay thẳng lên trên. Vẽ hoặc chặn đường đi ở phía trên.",
+            duration: "",
             color: 0x38bdf8
         }
     ]

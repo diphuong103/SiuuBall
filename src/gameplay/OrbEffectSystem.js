@@ -60,7 +60,6 @@ export class OrbEffectSystem {
       previous.expiresAt = now + (effect.durationMs || 0);
       previous.appliedAt = now;
       if (effect.type === OrbEffectType.SHIELD) this.game.setShield?.(true);
-      this._syncGravity();
       this.game.effectToast?.show(effect);
       return effect;
     }
@@ -78,7 +77,7 @@ export class OrbEffectSystem {
           cfg.slowBallMultiplier,
         );
         this.game.difficultySystem?.update(0);
-        this.game.bounceController?.maintainSpeed();
+        this.game.requestBallSpeedSync?.();
         break;
       }
 
@@ -92,7 +91,7 @@ export class OrbEffectSystem {
           cfg.speedUpMultiplier,
         );
         this.game.difficultySystem?.update(0);
-        this.game.bounceController?.maintainSpeed();
+        this.game.requestBallSpeedSync?.();
         break;
       }
 
@@ -108,23 +107,23 @@ export class OrbEffectSystem {
 
       case OrbEffectType.GRAVITY_DOWN: {
         const speed = this.game.difficultySystem.getCurrentSpeed();
-        const currentVx = this.game.ball?.body?.velocity?.x || 0;
-
-        Matter.Body.setVelocity(this.game.ball.body, {
-          x: currentVx * 0.5,
-          y: speed * 0.5,
-        });
+        if (this.game.ball?.body) {
+          Matter.Body.setVelocity(this.game.ball.body, {
+            x: 0,
+            y: speed,
+          });
+        }
         break;
       }
 
       case OrbEffectType.GRAVITY_UP: {
         const speed = this.game.difficultySystem.getCurrentSpeed();
-        const currentVx = this.game.ball?.body?.velocity?.x || 0;
-
-        Matter.Body.setVelocity(this.game.ball.body, {
-          x: currentVx * 0.5,
-          y: -speed * 0.5,
-        });
+        if (this.game.ball?.body) {
+          Matter.Body.setVelocity(this.game.ball.body, {
+            x: 0,
+            y: -speed,
+          });
+        }
         break;
       }
     }
@@ -137,7 +136,6 @@ export class OrbEffectSystem {
       });
     }
 
-    this._syncGravity();
     this.game.effectToast?.show(effect);
     return effect;
   }
@@ -146,7 +144,6 @@ export class OrbEffectSystem {
     const expired = this.effects.filter((active) => now >= active.expiresAt);
     this.effects = this.effects.filter((active) => now < active.expiresAt);
     for (const active of expired) this._revert(active.effect.type);
-    this._syncGravity();
   }
 
   getActiveEffects(now = performance.now()) {
@@ -156,33 +153,21 @@ export class OrbEffectSystem {
     }));
   }
 
+  consumeShield() {
+    const index = this.effects.findIndex(
+      (active) => active.effect.type === OrbEffectType.SHIELD,
+    );
+    if (index < 0) return false;
+
+    this.effects.splice(index, 1);
+    this._revert(OrbEffectType.SHIELD);
+    return true;
+  }
+
   clear() {
     const activeEffects = this.effects;
     this.effects = [];
     for (const active of activeEffects) this._revert(active.effect.type);
-    this._syncGravity();
-  }
-
-  _syncGravity() {
-    const activeGravity = this.effects
-      .filter(
-        ({ effect }) =>
-          effect.type === OrbEffectType.GRAVITY_DOWN ||
-          effect.type === OrbEffectType.GRAVITY_UP,
-      )
-      .sort((a, b) => b.appliedAt - a.appliedAt)[0];
-
-    if (!activeGravity) {
-      this.game.setGravityScale?.(GameConfig.physics.gravity);
-      return;
-    }
-
-    const cfg = GameConfig.orb.effects;
-    const gravity =
-      activeGravity.effect.type === OrbEffectType.GRAVITY_DOWN
-        ? cfg.gravityDownMultiplier
-        : -Math.abs(cfg.gravityUpMultiplier);
-    this.game.setGravityScale?.(gravity);
   }
 
   _revert(type) {
@@ -197,7 +182,7 @@ export class OrbEffectSystem {
       case OrbEffectType.SPEED_UP:
         this.game.difficultySystem?.clearSpeedModifier?.(type);
         this.game.difficultySystem?.update(0);
-        this.game.bounceController?.maintainSpeed();
+        this.game.requestBallSpeedSync?.();
         break;
       case OrbEffectType.GRAVITY_DOWN:
       case OrbEffectType.GRAVITY_UP:

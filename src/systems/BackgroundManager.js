@@ -9,9 +9,15 @@ export class BackgroundManager {
 
   async setBackground(path) {
     const requestId = ++this.loadId;
-    const texture = await Assets.load(path);
+    let texture;
 
-    if (requestId !== this.loadId) return;
+    try {
+      texture = await Assets.load(path);
+    } catch {
+      return false;
+    }
+
+    if (requestId !== this.loadId) return false;
 
     this.sprite?.destroy();
     this.sprite = new Sprite(texture);
@@ -19,5 +25,6 @@ export class BackgroundManager {
     this.sprite.height = this.app.screen.height;
 
     this.app.stage.addChildAt(this.sprite, 0);
+    return true;
   }
 }

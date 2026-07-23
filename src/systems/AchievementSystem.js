@@ -1,6 +1,6 @@
 const ACHIEVEMENTS = [
   { id: "bounces", target: 10, title: "10 BOUNCES", subtitle: "Keep the rhythm", color: 0x38bdf8, sfx: "achievement1" },
-  { id: "safeTime", target: 30, title: "NO DAMAGE", subtitle: "30 seconds survived", color: 0x4ade80, sfx: "achievement2" },
+  { id: "safeTime", target: 30, title: "30-SECOND SURVIVOR", subtitle: "Survive 30 seconds without taking damage", color: 0x4ade80, sfx: "achievement2" },
   { id: "orbs", target: 3, title: "ORB HUNTER", subtitle: "3 orbs collected", color: 0xfbbf24, sfx: "achievement3" },
   { id: "lines", target: 12, title: "LINE MASTER", subtitle: "12 lines drawn", color: 0xc084fc, sfx: "achievement4" },
 ];

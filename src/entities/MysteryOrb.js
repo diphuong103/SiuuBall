@@ -3,19 +3,19 @@ import { Container, Sprite, Assets, Graphics, Text, TextStyle } from 'pixi.js';
 import { GameConfig } from '../config/GameConfig.js';
 import { OrbEffectType } from '../gameplay/OrbEffectType.js';
 
-import doubleScoreImg from '../assets/textures/orb/double_score_orb.png';
-import slowImg from '../assets/textures/orb/Slow_Motion_Orb.png';
-import shieldImg from '../assets/textures/orb/Shield_Orb.png';
-import speedUpImg from '../assets/textures/orb/Speed_Up_Orb.png';
-import projectileImg from '../assets/textures/orb/Projectile_Orb.png';
-import gravityDownImg from '../assets/textures/orb/Gravity_Down_Orb.png';
-import gravityUpImg from '../assets/textures/orb/Gravity_Up_Orb.png';
-import mysteryImg from '../assets/textures/orb/Mystery_Orb.png';
-import score10Img from '../assets/textures/orb/10.png';
-import score20Img from '../assets/textures/orb/20.png';
-import score50Img from '../assets/textures/orb/50.png';
-import score100Img from '../assets/textures/orb/100.png';
-import score150Img from '../assets/textures/orb/150.png';
+import doubleScoreImg from '../assets/textures/orb/double_score_orb.webp';
+import slowImg from '../assets/textures/orb/Slow_Motion_Orb.webp';
+import shieldImg from '../assets/textures/orb/Shield_Orb.webp';
+import speedUpImg from '../assets/textures/orb/Speed_Up_Orb.webp';
+import projectileImg from '../assets/textures/orb/Projectile_Orb.webp';
+import gravityDownImg from '../assets/textures/orb/Gravity_Down_Orb.webp';
+import gravityUpImg from '../assets/textures/orb/Gravity_Up_Orb.webp';
+import mysteryImg from '../assets/textures/orb/Mystery_Orb.webp';
+import score10Img from '../assets/textures/orb/10.webp';
+import score20Img from '../assets/textures/orb/20.webp';
+import score50Img from '../assets/textures/orb/50.webp';
+import score100Img from '../assets/textures/orb/100.webp';
+import score150Img from '../assets/textures/orb/150.webp';
 
 const orbTextures = {
     [OrbEffectType.DOUBLE_SCORE]: doubleScoreImg,
