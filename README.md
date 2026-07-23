@@ -9,7 +9,7 @@ Players draw lines to keep the ball alive, collect score orbs, avoid hazards, an
 
 > Live Demo
 
-https://YOUR_VERCEL_URL.vercel.app
+https://siuu-ball.vercel.app/
 
 ---
 
