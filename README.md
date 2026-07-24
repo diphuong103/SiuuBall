@@ -106,7 +106,7 @@ src
 Clone repository
 
 ```bash
-git clone https://github.com/<your-name>/SiuuBall.git
+git clone https://github.com/diphuong103/SiuuBall.git
 ```
 
 Install dependencies
